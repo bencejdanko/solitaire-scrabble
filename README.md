@@ -15,7 +15,7 @@ https://github.com/bencejdanko/solitaire-scrabble
 * Milestone 5 (3/25 - 4/5): Add hints
 * Milestone 6 (4/8 - 4/16): Deployment
 
-### D Technology
+### D. Technology
 
 Python/Flask
 
@@ -23,6 +23,6 @@ Python/Flask
 
 A dynamic programming algorithm can be formulated to analyze the optimal word sequences.
 
-### F Market Space & Selling Point
+### F. Market Space & Selling Point
 
 Casual word puzzle games are a popular genre, including games like Scrabble or Wordle. This application would be similarly appealing, where a player can easily test their vocabulary knowledge while trying to get as many competitive points as possible. 
