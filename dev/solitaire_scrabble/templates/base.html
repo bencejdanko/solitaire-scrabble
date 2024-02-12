@@ -1,0 +1,22 @@
+<nav>
+    <h1>Solitaire Scrabble</h1>
+    <ul>
+        {% if g.user %}
+        <li><span>{{ g.user['username'] }}</span></li>
+        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+        
+
+        {% else %}
+            <li>
+                <li><a href="{{ url_for('auth.register') }}">Register</a>
+                <li><a href="{{ url_for('auth.login') }}">Log In</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+{% endfor %}
+
+{% block content %}{% endblock %}

@@ -1,7 +1,6 @@
+Week 2 Report
 Project Title: Solitaire Scrabble
-
 Project Repository: https://github.com/bencejdanko/solitaire-scrabble
-
 Milestones:
 * Milestone 1 (2/5 - 2/16): Initialize technology frontends, backend development environments
 * Milestone 2 (2/12 - 2/23): Develop CRUD API, UI for login forms and users
