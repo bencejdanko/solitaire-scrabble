@@ -6,9 +6,9 @@ Navigate to development folder:
 
 `cd solitaire-scrabble/dev/`
 
-Create a python enviroment and acitvate it:
+Create a python enviroment and activate it:
 
-`python3 -m venv my_venv`
+`python3 -m venv venv`
 `source venv/bin/activate`
 
 Install project dependencies:
