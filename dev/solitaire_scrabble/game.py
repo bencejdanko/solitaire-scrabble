@@ -1,0 +1,87 @@
+import random
+import string
+import itertools
+
+scrabble_scores = {
+    'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1,
+    'f': 4, 'g': 2, 'h': 4, 'i': 1, 'j': 8,
+    'k': 5, 'l': 1, 'm': 3, 'n': 1, 'o': 1,
+    'p': 3, 'q': 10, 'r': 1, 's': 1, 't': 1,
+    'u': 1, 'v': 4, 'w': 4, 'x': 8, 'y': 4,
+    'z': 10
+}
+
+def generate_bonus_sequence(length=20, bonus_types=['2x', '3x'], prob_none=0.75):
+    sequence = []
+    for _ in range(length):
+        if random.random() < prob_none:
+            sequence.append(None)
+        else: sequence.append(random.choice(bonus_types))
+    return sequence
+
+def generate_random_letters(count=20):
+    letters = string.ascii_lowercase
+    return random.choices(letters, k=count)
+
+def generate_possible_words(letters):
+    
+    possible_words = []
+    for length in range(1, len(letters) + 1):
+        for perm in itertools.permutations(letters, length):
+            word = ''.join(perm)
+            if word in all_words:
+                possible_words.append(word)
+
+    return possible_words
+
+def calculate_word_score(word, bonus_sequence):
+    score = 0
+    for i, letter in enumerate(word):
+        base_score = scrabble_scores[letter]
+        if bonus_sequence[i]:
+            multiplier = int(bonus_sequence[i][:-1])
+            score += base_score * multiplier
+        else: 
+            score += base_score
+    return score
+
+def draw_tiles(tile_sequence, hand, num_to_draw):
+    for _ in range(num_to_draw):
+        if tile_sequence:
+            new_tile = tile_sequence.pop(0)
+            hand.append(new_tile)
+
+def MaxScore(tile_sequence, bonus_sequence, hand=[]):
+
+    """
+    Base cases: if tile sequence is empty, or the hand is already full,
+    return 0
+    """
+    if not tile_sequence or len(hand) == 7:
+        return 0
+
+    best_score = 0
+    for word in generate_possible_words(hand):
+        if word in all_words:
+            new_hand = hand.copy()
+            word_score = calculate_word_score(word, bonus_sequence)
+            draw_tiles(tile_sequence, new_hand, 7- len(new_hand))
+            for letter in word:
+                new_hand.remove(letter)
+            best_score = max(best_score, word_score + MaxScore(tile_sequence, bonus_sequence, new_hand))
+    return best_score
+
+all_words = set()
+with open('dictionary.txt') as word_file:
+    for word in word_file:
+        entry = word.strip().lower()
+        all_words.add(entry.lower())
+
+tile_sequence = generate_random_letters()
+bonus_sequence = generate_bonus_sequence()
+
+print(tile_sequence)
+print(bonus_sequence)
+
+max_score = MaxScore(tile_sequence, bonus_sequence)
+print(max_score)
