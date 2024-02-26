@@ -22,3 +22,5 @@ Initialize the database:
 Start the application:
 
 `flask --app solitaire-scrabble run`
+
+Open the app on http://localhost:5000.
