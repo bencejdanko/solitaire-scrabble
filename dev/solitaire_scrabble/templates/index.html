@@ -5,4 +5,54 @@
 <title>Solitaire Scrabble</title>
 <h1>Solitaire Scrabble</h1>
 
+<canvas id='canvas'></canvas>
+<script>
+    var canvas=document.getElementById("canvas")
+    var ctx=canvas.getContext('2d')
+    ctx.canvas.width = 2000
+    ctx.canvas.height = 2000
+
+    ctx.font="18px Arial";
+
+    tileWidth = 40
+
+    sample = [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g'
+    ]
+
+    scores = [
+        1, 4, 4, 3, 1, 2, 3
+    ]
+
+    function drawUserTile() {
+        var x = 10
+        var y = 20
+        
+        while (sample.length > 0) {
+            ctx.font = '20px Arial'
+            letter = sample.pop()
+            score = scores.pop()
+            ctx.fillStyle='beige'
+            ctx.fillRect(x,y,tileWidth,tileWidth)
+            y += 30
+            x += 10
+            ctx.fillStyle = 'black'
+            ctx.fillText(letter, x,y)
+            x += 5
+            y -= 30
+
+            ctx.font = '10px Arial' 
+            ctx.fillText(score,x,y)
+            x += tileWidth + 10
+            ctx.font = '20px Arial'
+        }
+    }
+    drawUserTile()
+
+
+
+
+    
+</script>
+
 {% endblock %}

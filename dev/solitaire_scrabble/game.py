@@ -52,16 +52,11 @@ def draw_tiles(tile_sequence, hand, num_to_draw):
             hand.append(new_tile)
 
 def MaxScore(tile_sequence, bonus_sequence, hand=[]):
-
-    """
-    Base cases: if tile sequence is empty, or the hand is already full,
-    return 0
-    """
     if not tile_sequence or len(hand) == 7:
         return 0
 
     best_score = 0
-    for word in generate_possible_words(hand):
+    for word in generate_possible_swords(hand):
         if word in all_words:
             new_hand = hand.copy()
             word_score = calculate_word_score(word, bonus_sequence)
