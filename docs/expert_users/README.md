@@ -17,10 +17,10 @@ Install project dependencies:
 
 Initialize the database:
 
-`flask --app solitaire_scrabble init_db`
+`flask --app solitaire_scrabble init-db`
 
 Start the application:
 
-`flask --app solitaire-scrabble run`
+`flask --app solitaire_scrabble run`
 
 Open the app on http://localhost:5000.

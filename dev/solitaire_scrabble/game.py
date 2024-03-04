@@ -67,16 +67,30 @@ def MaxScore(tile_sequence, bonus_sequence, hand=[]):
     return best_score
 
 all_words = set()
-with open('dictionary.txt') as word_file:
+with open("dictionary.txt") as word_file:
     for word in word_file:
         entry = word.strip().lower()
         all_words.add(entry.lower())
+word_file.close()
 
-tile_sequence = generate_random_letters()
-bonus_sequence = generate_bonus_sequence()
+from flask import (
+    Blueprint, render_template, redirect, url_for, request
+    )
 
-print(tile_sequence)
-print(bonus_sequence)
+from solitaire_scrabble.db import get_db
 
-max_score = MaxScore(tile_sequence, bonus_sequence)
-print(max_score)
+bp = Blueprint('game', __name__, url_prefix='/game')
+
+@bp.route('/')
+def index():
+    db = get_db()
+    users = db.execute(
+        'SELECT username, score FROM user'
+    ).fetchall()
+    return render_template('game/index.html', 
+        users=users, 
+        hand=["a", "b", "c", "d", "e", "f", "g"], 
+        tile_scores = scrabble_scores,
+        sequence = ["h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x"],
+        
+        )

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<title>Solitaire Scrabble</title>
+
+<div class="game">
+
+    <div class="hand">
+        {% for tile in hand %}
+            <div class="hand-tile" draggable="true">{{ tile }}
+                <span class="hand-tile-score">{{ tile_scores[tile] }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="sequence">
+        {% for tile in sequence %}
+            <div class="sequence-tile">{{ tile }}
+                <span class="sequence-tile-score">{{ tile_scores[tile] }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<div class="row center">
+    <div class="column left scrollable">
+        <h2>leadership</h2>
+        <table style="width: 100%" class="center">
+            <tr>
+                <th>Username</th>
+                <th>Score</th>
+            </tr>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user['username'] }}</td>
+                    <td>{{ user['score'] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="column middle scrollable">
+        <h2>chat</h2>
+    </div>
+    <div class="column right scrollable">
+        <h2>other</h2>
+    </div>
+</div>
+
+{% endblock %}

@@ -23,12 +23,15 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
-        return render_template('index.html')
+        return redirect(url_for('game.index'))
 
     from . import db
     db.init_app(app)
 
     from . import auth
     app.register_blueprint(auth.bp)
+
+    from . import game
+    app.register_blueprint(game.bp)
 
     return app
