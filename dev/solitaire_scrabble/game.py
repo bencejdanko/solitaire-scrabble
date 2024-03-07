@@ -11,7 +11,7 @@ scrabble_scores = {
     'z': 10
 }
 
-def generate_bonus_sequence(length=20, bonus_types=['2x', '3x'], prob_none=0.75):
+def generate_board(length=20, bonus_types=['2x', '3x'], prob_none=0.75):
     sequence = []
     for _ in range(length):
         if random.random() < prob_none:
@@ -34,12 +34,12 @@ def generate_possible_words(letters):
 
     return possible_words
 
-def calculate_word_score(word, bonus_sequence):
+def calculate_word_score(word, board):
     score = 0
     for i, letter in enumerate(word):
         base_score = scrabble_scores[letter]
-        if bonus_sequence[i]:
-            multiplier = int(bonus_sequence[i][:-1])
+        if board[i]:
+            multiplier = int(board[i][:-1])
             score += base_score * multiplier
         else: 
             score += base_score
@@ -51,7 +51,7 @@ def draw_tiles(tile_sequence, hand, num_to_draw):
             new_tile = tile_sequence.pop(0)
             hand.append(new_tile)
 
-def MaxScore(tile_sequence, bonus_sequence, hand=[]):
+def MaxScore(tile_sequence, board, hand=[]):
     if not tile_sequence or len(hand) == 7:
         return 0
 
@@ -59,11 +59,11 @@ def MaxScore(tile_sequence, bonus_sequence, hand=[]):
     for word in generate_possible_swords(hand):
         if word in all_words:
             new_hand = hand.copy()
-            word_score = calculate_word_score(word, bonus_sequence)
+            word_score = calculate_word_score(word, board)
             draw_tiles(tile_sequence, new_hand, 7- len(new_hand))
             for letter in word:
                 new_hand.remove(letter)
-            best_score = max(best_score, word_score + MaxScore(tile_sequence, bonus_sequence, new_hand))
+            best_score = max(best_score, word_score + MaxScore(tile_sequence, board, new_hand))
     return best_score
 
 all_words = set()
@@ -87,10 +87,12 @@ def index():
     users = db.execute(
         'SELECT username, score FROM user'
     ).fetchall()
+    board = generate_board()
+    print(board)
     return render_template('game/index.html', 
         users=users, 
         hand=["a", "b", "c", "d", "e", "f", "g"], 
         tile_scores = scrabble_scores,
         sequence = ["h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x"],
-        
-        )
+        board = board,
+    )
