@@ -175,7 +175,7 @@ a {
 .empty-slot {
     width: 50px;
     height: 50px;
-    background-color: #a8d6f4be;
+    background-color: #a3c7e0be;
     border: 1px solid #000000;
     margin: 5px;
     text-align: center;
@@ -185,14 +185,16 @@ a {
 
 .board {
     display: grid;
-    grid-template-columns: repeat(15, 1fr);
-    grid-template-rows: repeat(15, 1fr);
+    grid-template-columns: repeat(100, 1fr);
+    align-items: center;
+    max-width: 800px;
+    overflow-x: auto;
 }
 
 .bonus-slot {
-    width: 30px;
-    height: 30px;
-    background-color: #a8d6f4be;
+    width: 50px;
+    height: 50px;
+    background-color: #3afd47be;
     border: 1px solid #000000;
     margin: 5px;
     text-align: center;

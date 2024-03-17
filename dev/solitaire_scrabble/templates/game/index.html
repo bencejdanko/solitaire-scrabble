@@ -4,24 +4,40 @@
 
 <title>Solitaire Scrabble</title>
 
+<script>
+
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  const data = ev.dataTransfer.getData("text");
+  ev.target.appendChild(document.getElementById(data));
+}
+
+</script>
+
 <div class="game">
 
     <div class="board">
         {% for slot in board %}
-                {% if column == None %}
-                    <div class="empty-slot"></div>
+                {% if slot == None %}
+                    <div class="empty-slot" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
                 {% else %}
-                    <div class="bonus-slot">
-                        column
-                    </div>
+                    <div class="bonus-slot" ondrop="drop(event)" ondragover="allowDrop(event)">{{ slot }}</div>
                 {% endif %}
         {% endfor %}
     </div>
 
     <div class="hand">
         {% for tile in hand %}
-            <div class="hand-tile" draggable="true">{{ tile }}
-                <span class="hand-tile-score">{{ tile_scores[tile] }}</span>
+            <div class="hand-tile" draggable="true" ondragstart="drag(event)">{{ tile }}
+                <span class="hand-tile-score" >{{ tile_scores[tile] }}</span>
             </div>
         {% endfor %}
     </div>
