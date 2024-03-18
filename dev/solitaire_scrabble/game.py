@@ -95,4 +95,23 @@ def index():
         tile_scores = scrabble_scores,
         sequence = ["h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x"],
         board = board,
+        users_serialized = [{'username': user['username'], 'score': user['score']} for user in users]
     )
+
+@bp.route('/submit', methods=['POST'])
+def submit():
+    played_board = request.form['played_board']
+    word = ''
+    for word in played_board:
+        if word != 'None':
+            word += word
+        else: break
+    if word in all_words:
+        db = get_db()
+        db.execute(
+            "UPDATE user SET score = score + ? WHERE username = ?",
+            (calculate_word_score(word, played_board), 'test')
+        )
+        db.commit()
+        return redirect(url_for('game.index'))
+    else: return "Invalid word. Please try again."

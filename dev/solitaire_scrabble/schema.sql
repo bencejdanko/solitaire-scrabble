@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS game;
 
 CREATE TABLE user (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -7,7 +8,10 @@ CREATE TABLE user (
     password TEXT NOT NULL
 );
 
-INSERT INTO user (username, score, password) VALUES ('bence', 0, '123');
-INSERT INTO user (username, score, password) VALUES ('john', 0, '123');
-INSERT INTO user (username, score, password) VALUES ('pablo', 0, '123');
-INSERT INTO user (username, score, password) VALUES ('picasso', 0, '123');
+CREATE TABLE game (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    score INTEGER NOT NULL,
+    plays TEXT,
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);

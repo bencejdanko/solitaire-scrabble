@@ -5,6 +5,8 @@ import os
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
+    app.jinja_env.auto_reload = True
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'solitaire_scrabble.sqlite')
