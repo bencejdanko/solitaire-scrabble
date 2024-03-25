@@ -130,10 +130,12 @@
         updateWordScore();
     }
 
-    function submit() {
+    async function submit() {
         console.log('submitting');
 
-        response = fetch('/game/submit', {
+        console.log(played_board)
+
+        response = await fetch('/game/submit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -143,7 +145,6 @@
             })
         })
 
-        console.log(response.json())
     }
 
 </script>
