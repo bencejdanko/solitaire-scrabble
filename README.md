@@ -9,10 +9,9 @@ https://github.com/bencejdanko/solitaire-scrabble
 ### C. Milestones
 
 * Milestone 1/2 (2/5 - 2/16): Initialize technology frontends, backend development environments
-* Milestone 3 (2/19 - 3/22): Implement game UI and algorithm
-* Milestone 4 (3/25 - 4/12): Assemble puzzle level prototype
-* Milestone 5 (4/15 - 4/26): Add hints
-* Milestone 6 (4/29 - 5/13): Deployment
+* Milestone 3 (2/19 - 4/12): Implement game UI and algorithm
+* Milestone 4 (4/15 - 4/26): Add hints
+* Milestone 5 (4/29 - 5/13): Deployment
 
 ### D. Technology
 
