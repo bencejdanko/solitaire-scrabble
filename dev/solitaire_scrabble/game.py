@@ -1,6 +1,8 @@
 import random
 import string
 import itertools
+import json
+from flask import jsonify
 
 scrabble_scores = {
     'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1,
@@ -39,17 +41,22 @@ def calculate_word_score(word, board):
     for i, letter in enumerate(word):
         base_score = scrabble_scores[letter]
         if board[i]:
-            multiplier = int(board[i][:-1])
+            print(board[i])
+            multiplier = int(board[i][-1])
             score += base_score * multiplier
         else: 
             score += base_score
     return score
 
 def draw_tiles(tile_sequence, hand, num_to_draw):
+    new_hand = hand
+    new_tile_sequence = tile_sequence
+
     for _ in range(num_to_draw):
-        if tile_sequence:
-            new_tile = tile_sequence.pop(0)
-            hand.append(new_tile)
+        if new_tile_sequence:
+            new_tile = new_tile_sequence.pop(0)
+            new_hand.append(new_tile)
+    return (new_tile_sequence, new_hand)
 
 def MaxScore(tile_sequence, board, hand=[]):
     if not tile_sequence or len(hand) == 7:
@@ -87,25 +94,38 @@ def index():
     users = db.execute(
         'SELECT username, score FROM user'
     ).fetchall()
-    board = generate_board()
-    print(board)
-    return render_template('game/index.html', 
-        users=users, 
-        hand=["a", "b", "c", "d", "e", "f", "g"], 
-        tile_scores = scrabble_scores,
-        sequence = ["h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x"],
-        board = board,
-        users_serialized = [{'username': user['username'], 'score': user['score']} for user in users]
+    
+    return render_template('game/index.html',
+        users = [{'username': user['username'], 'score': user['score']} for user in users]
     )
+
+@bp.route('/start', methods=['GET'])
+def start():
+    sequence = generate_random_letters
+    board = generate_board()
+    hand = []
+    sequence, hand = draw_tiles(sequence, hand, 7)
+    return jsonify({
+        'sequence': sequence,
+        'hand': hand,
+        'board': board
+    })
 
 @bp.route('/submit', methods=['POST'])
 def submit():
-    played_board = request.form['played_board']
+    data = request.get_json()
+    played_board = json.loads(data['played_board'])
+    db = get_db()
+    board = db.execute(
+        'SELECT board FROM game WHERE id = 1'
+    ).fetchone()
+
     word = ''
-    for word in played_board:
-        if word != 'None':
-            word += word
+    for letter in played_board:
+        if letter is not None:
+            word += letter
         else: break
+
     if word in all_words:
         db = get_db()
         db.execute(
@@ -114,4 +134,4 @@ def submit():
         )
         db.commit()
         return redirect(url_for('game.index'))
-    else: return "Invalid word. Please try again."
+    else: return jsonify({'error': 'Invalid word. Please try again.'})
