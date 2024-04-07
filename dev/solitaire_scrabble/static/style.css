@@ -84,6 +84,11 @@ a {
     max-height: 400px;
 }
 
+.error {
+    text-align: center;
+    color: red;
+}
+
 .column {
     float: left;
     background-color: #f5f5f5a8;
