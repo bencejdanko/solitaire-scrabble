@@ -13,13 +13,88 @@
         return vars;
     }
 
-    let hand = getData({{ hand| tojson | safe}})
-    board = getData({{ board| tojson | safe}})
-    sequence = getData({{ sequence| tojson | safe}})
-    tile_scores = getData({{ tile_scores| tojson | safe}})
-    users = getData({{ users_serialized | tojson | safe}})
+    let hand = getData({{ hand|default('[]') | tojson | safe}})
+    let board = getData({{ board|default('[]') | tojson | safe}})
+    let sequence = getData({{ sequence|default('[]') | tojson | safe}})
+    let tile_scores = getData({{ tile_scores|default('{}') | tojson | safe}})
+    let users = getData({{ users_serialized|default('[]') | tojson | safe}})
+    let error = ""
 
     played_board = Array(board.length).fill(null)
+
+    game_id = null
+
+
+    function clearSession() {
+        response = fetch('/game/clear', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network error');
+                }
+
+                location.reload();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    function startGame() {
+        response = fetch('/game/start', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network error');
+                }
+
+                location.reload();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
+
+    function refreshGame(game_id) {
+        let response = fetch('/game/' + game_id, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network error');
+                }
+                return response.json();
+            })
+            .then(data => {
+
+                console.log(data)
+                hand = data.hand;
+                board = data.board;
+                sequence = data.sequence;
+                tile_scores = data.tile_scores;
+                updateHand();
+                updateBoard();
+                updateWordScore();
+                updateSequence();
+                document.getElementsByClassName('error')[0].innerHTML = "";
+
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
 
     function updateWordScore() {
         let word_score = 0;
@@ -40,7 +115,7 @@
 
     function updateHand() {
         let hand_div = document.getElementsByClassName('hand');
-        
+
         while (hand_div[0].firstChild) {
             hand_div[0].removeChild(hand_div[0].firstChild);
         }
@@ -69,7 +144,11 @@
             tile.setAttribute('id', 'board-tile-' + i);
             tile.setAttribute('ondrop', 'handleDrop(event)');
             tile.setAttribute('ondragover', 'allowDrop(event)');
-            if (played_board[i] != null && board[i] != null) {
+
+            if (board[i] != null && board[i][-1] == '*' ) {
+                tile.innerHTML = played_board[i]
+                tile.setAttribute('style', 'background-color: blue')
+            } else if (played_board[i] != null && board[i] != null) {
                 tile.innerHTML = played_board[i] + '<span class="hand-tile-score">' + tile_scores[played_board[i]] + '</span>';
                 tile.setAttribute('style', 'background-color: #3afd47be')
             } else if (played_board[i] != null) {
@@ -97,10 +176,10 @@
     }
 
     addEventListener("load", (event) => {
-        updateHand();
-        updateBoard();
-        updateWordScore();
-        updateSequence();
+        let game_id = "{{ session.get('game_id') }}"
+        if (game_id) {
+            refreshGame(game_id);
+        }
     });
 
     current_play = [];
@@ -122,7 +201,7 @@
         e.preventDefault();
         played_board_index = e.target.id.split('-')[2];
         played_board[played_board_index] = data;
-        hand = hand.filter(function(value, index, arr) {
+        hand = hand.filter(function (value, index, arr) {
             return index != hand_index;
         });
         updateBoard();
@@ -130,12 +209,11 @@
         updateWordScore();
     }
 
-    async function submit() {
-        console.log('submitting');
+    function submit() {
+        let data;
+        document.getElementsByClassName('error')[0].innerHTML = "";
 
-        console.log(played_board)
-
-        response = await fetch('/game/submit', {
+        response = fetch('/game/' + "{{ session.get('game_id') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -144,10 +222,30 @@
                 'played_board': JSON.stringify(played_board)
             })
         })
+            .then(response => {
+                if (!response.ok) {
+                    document.getElementsByClassName('error')[0].innerHTML = "Network error";
+                    throw new Error('Network error');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    document.getElementsByClassName('error')[0].innerHTML = data.error;
+                } else {
+                    refreshGame("{{ session.get('game_id') }}");
+                }
+            })
 
     }
 
 </script>
+
+{% if not session.get('game_id') %}
+
+<button onclick="startGame()">Start a random game</button>
+
+{% else %}
 
 <div class="game">
 
@@ -156,12 +254,16 @@
     <div class="hand"></div>
     <div class="sequence"></div>
 
+    <div class="error"></div>
+
     <div class="controls">
         <button onclick="submit()">submit</button>
-        <button>clear</button>
+        <button onclick="clearSession()">clear</button>
     </div>
 
 </div>
+
+{% endif %}
 
 <div class="row center">
     <div class="column left scrollable">

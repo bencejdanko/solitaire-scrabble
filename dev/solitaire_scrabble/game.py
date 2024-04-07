@@ -1,6 +1,10 @@
 import random
 import string
 import itertools
+import json
+from flask import (
+    jsonify, session, g
+)
 
 scrabble_scores = {
     'a': 1, 'b': 3, 'c': 3, 'd': 2, 'e': 1,
@@ -39,17 +43,21 @@ def calculate_word_score(word, board):
     for i, letter in enumerate(word):
         base_score = scrabble_scores[letter]
         if board[i]:
-            multiplier = int(board[i][:-1])
+            multiplier = int(board[i][-1])
             score += base_score * multiplier
         else: 
             score += base_score
     return score
 
 def draw_tiles(tile_sequence, hand, num_to_draw):
+    new_hand = hand
+    new_tile_sequence = tile_sequence
+
     for _ in range(num_to_draw):
-        if tile_sequence:
-            new_tile = tile_sequence.pop(0)
-            hand.append(new_tile)
+        if new_tile_sequence:
+            new_tile = new_tile_sequence.pop(0)
+            new_hand.append(new_tile)
+    return (new_tile_sequence, new_hand)
 
 def MaxScore(tile_sequence, board, hand=[]):
     if not tile_sequence or len(hand) == 7:
@@ -87,31 +95,106 @@ def index():
     users = db.execute(
         'SELECT username, score FROM user'
     ).fetchall()
-    board = generate_board()
-    print(board)
-    return render_template('game/index.html', 
-        users=users, 
-        hand=["a", "b", "c", "d", "e", "f", "g"], 
-        tile_scores = scrabble_scores,
-        sequence = ["h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x"],
-        board = board,
-        users_serialized = [{'username': user['username'], 'score': user['score']} for user in users]
+    
+    return render_template('game/index.html',
+        users = [{'username': user['username'], 'score': user['score']} for user in users]
     )
 
-@bp.route('/submit', methods=['POST'])
-def submit():
-    played_board = request.form['played_board']
+@bp.route('/start', methods=['GET'])
+def start():
+    user_id = session.get('user_id')
+    if not user_id:
+        user_id = "Guest"
+
+    starting_sequence = generate_random_letters()
+    board = generate_board()
+    hand = []
+    sequence, hand = draw_tiles(starting_sequence, hand, 7)
+
+    db = get_db()
+    db.execute(
+        'INSERT INTO game (user_id, board, starting_sequence, hand, sequence, score) VALUES (?, ?, ?, ?, ?, ?)',
+        (user_id, json.dumps(board), json.dumps(starting_sequence), json.dumps(hand), json.dumps(sequence), 0)
+    )
+    db.commit()
+
+    game_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
+    session['game_id'] = game_id
+    return jsonify({'game_id': game_id}), 201
+
+@bp.route('/<int:game_id>', methods=['GET'])
+def getData(game_id):
+    db = get_db()
+    game = db.execute(
+        'SELECT * FROM game WHERE id = ?',
+        (game_id,)
+    ).fetchone()
+
+    if game['user_id'] == session.get('user_id') or game['user_id'] == 'Guest':
+        return jsonify({
+            'board': json.loads(game['board']),
+            'score': game['score'],
+            'sequence': json.loads(game['sequence']),
+            'hand': json.loads(game['hand']),
+            'tile_scores': scrabble_scores,
+        })
+    else:
+        return jsonify({'error': 'Unauthorized access'}), 403
+
+@bp.route('/clear', methods=['GET'])
+def clear():
+    session.clear()
+    return redirect(url_for('game.index'))
+
+@bp.route('/<int:game_id>', methods=['POST'])
+def submit(game_id):
+    data = request.get_json()
+    played_board = json.loads(data['played_board'])
+
+    db = get_db()
+    game = db.execute(
+        'SELECT * FROM game WHERE id = ?', (game_id,)
+    ).fetchone()
+
+    user = game['user_id']
+
+    if user != session.get('user_id') and user != 'Guest':
+        return jsonify({'error': 'Unauthorized access'}), 403
+
+    board = json.loads(game['board'])
+    hand = json.loads(game['hand'])
+
     word = ''
-    for word in played_board:
-        if word != 'None':
-            word += word
+    for letter in played_board:
+        if letter is not None:
+            word += letter
         else: break
+    
+    for char in word:
+        if char in hand:
+            hand.remove(char)
+        else: return jsonify({'error': 'Invalid word. Please try again.'}), 400
+
     if word in all_words:
         db = get_db()
         db.execute(
-            "UPDATE user SET score = score + ? WHERE username = ?",
-            (calculate_word_score(word, played_board), 'test')
+            'UPDATE game SET score = score + ? WHERE id = ?',
+            (calculate_word_score(word, board), game_id)
         )
+
+        # I need to update the board, hand, sequence.
+
+
+        new_sequence, new_hand = draw_tiles(json.loads(game['sequence']), hand, 7-len(word))
+        for i, letter in enumerate(word):
+            board[i] = letter + '*'
+
+        db.execute(
+            'UPDATE game SET board = ?, hand = ?, sequence = ? WHERE id = ?',
+            (json.dumps(board), json.dumps(new_hand), json.dumps(new_sequence), game_id)
+        )
+
         db.commit()
-        return redirect(url_for('game.index'))
-    else: return "Invalid word. Please try again."
+        return jsonify({'success': 'Word submitted successfully!'}), 201
+
+    else: return jsonify({'error': 'Invalid word. Please try again.'}), 400
