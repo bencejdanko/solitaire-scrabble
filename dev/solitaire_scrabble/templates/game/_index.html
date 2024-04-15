@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<title>Solitaire Scrabble</title>
+
+<script>
+
+    function updateCurrentScore() {
+        document.getElementsByClassName('current-score')[0].innerHTML = "current score: " + current_score;
+    }
+
+    function updateWordScore() {
+        let word_score = 0;
+        for (let i = 0; i < played_board.length; i++) {
+            if (played_board[i] != null) {
+                if (board[i] == null) {
+                    word_score += tile_scores[played_board[i]];
+                } else {
+                    word_score += tile_scores[played_board[i]] * board[i][0];
+                }
+            } else {
+                break
+            }
+        }
+
+        document.getElementsByClassName('word-score')[0].innerHTML = "word score: " + word_score;
+    }
+
+    function updateHand() {
+        let hand_div = document.getElementsByClassName('hand');
+
+        while (hand_div[0].firstChild) {
+            hand_div[0].removeChild(hand_div[0].firstChild);
+        }
+
+        for (let i = 0; i < hand.length; i++) {
+            let tile = document.createElement('div');
+            tile.setAttribute('class', 'hand-tile');
+            tile.setAttribute('id', 'hand-tile-' + i);
+            tile.setAttribute('draggable', 'true');
+            tile.setAttribute('ondragstart', 'handleDrag(event)');
+            tile.innerHTML = hand[i] + '<span class="hand-tile-score">' + tile_scores[hand[i]] + '</span>';
+            hand_div[0].appendChild(tile);
+        }
+    }
+
+    function updateBoard() {
+
+        let board_div = document.getElementsByClassName('board');
+        while (board_div[0].firstChild) {
+            board_div[0].removeChild(board_div[0].firstChild);
+        }
+
+        for (let i = 0; i < board.length; i++) {
+            let tile = document.createElement('div');
+            tile.setAttribute('class', 'board-tile');
+            tile.setAttribute('id', 'board-tile-' + i);
+            tile.setAttribute('ondrop', 'handleDrop(event)');
+            tile.setAttribute('ondragover', 'allowDrop(event)');
+
+            if (board[i] != null && board[i][-1] == '*' ) {
+                tile.innerHTML = played_board[i]
+                tile.setAttribute('style', 'background-color: blue')
+            } else if (played_board[i] != null && board[i] != null) {
+                tile.innerHTML = played_board[i] + '<span class="hand-tile-score">' + tile_scores[played_board[i]] + '</span>';
+                tile.setAttribute('style', 'background-color: #3afd47be')
+            } else if (played_board[i] != null) {
+                tile.innerHTML = played_board[i] + '<span class="hand-tile-score">' + tile_scores[played_board[i]] + '</span>';
+            } else if (board[i] != null) {
+                tile.innerHTML = board[i]
+                tile.setAttribute('style', 'background-color: #3afd47be')
+            }
+            board_div[0].appendChild(tile);
+        }
+    }
+
+    function updateSequence() {
+        let sequence_div = document.getElementsByClassName('sequence');
+        while (sequence_div[0].firstChild) {
+            sequence_div[0].removeChild(sequence_div[0].firstChild);
+        }
+
+        for (let i = 0; i < sequence.length; i++) {
+            let tile = document.createElement('div');
+            tile.setAttribute('class', 'sequence-tile');
+            tile.innerHTML = sequence[i] + '<span class="sequence-tile-score">' + tile_scores[sequence[i]] + '</span>';
+            sequence_div[0].appendChild(tile);
+        }
+    }
+
+    addEventListener("load", (event) => {
+        let game_id = "{{ session.get('game_id') }}"
+        if (game_id) {
+            refreshGame(game_id);
+        }
+    });
+
+    current_play = [];
+
+    function allowDrop(e) {
+        e.preventDefault();
+    }
+
+    let data;
+    let hand_index;
+
+    function handleDrag(e) {
+        id = e.target.id;
+        hand_index = id.split('-')[2];
+        data = hand[hand_index];
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        played_board_index = e.target.id.split('-')[2];
+        played_board[played_board_index] = data;
+        hand = hand.filter(function (value, index, arr) {
+            return index != hand_index;
+        });
+        updateBoard();
+        updateHand();
+        updateWordScore();
+    }
+
+    function submit() {
+        let data;
+        document.getElementsByClassName('error')[0].innerHTML = "";
+
+        console.log(played_board)
+
+        response = fetch('/game/' + "{{ session.get('game_id') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'played_board': JSON.stringify(played_board)
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    document.getElementsByClassName('error')[0].innerHTML = "Network error";
+                    throw new Error(response);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    document.getElementsByClassName('error')[0].innerHTML = data.error;
+                } else {
+                    refreshGame("{{ session.get('game_id') }}");
+                }
+            })
+
+    }
+
+</script>
+
+{% if not session.get('game_id') %}
+
+<button onclick="startGame()">Start a random game</button>
+
+{% else %}
+
+<div class="game">
+
+    <div class="board"></div>
+    <div class="word-score"></div>
+    <div class="current-score"></div>
+    <div class="hand"></div>
+    <div class="sequence"></div>
+
+    <div class="error"></div>
+
+    <div class="controls">
+        <button onclick="submit()">submit</button>
+        <button onclick="clearSession()">clear</button>
+    </div>
+
+</div>
+
+{% endif %}
+
+<div class="row center">
+    <div class="column left scrollable">
+        <h2>leadership</h2>
+        <table style="width: 100%" class="center">
+            <tr>
+                <th>Username</th>
+                <th>Score</th>
+            </tr>
+            {% for user in users %}
+            <tr>
+                <td>{{ user['username'] }}</td>
+                <td>{{ user['score'] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="column middle scrollable">
+        <h2>chat</h2>
+    </div>
+    <div class="column right scrollable">
+        <h2>other</h2>
+    </div>
+</div>
+
+{% endblock content %}

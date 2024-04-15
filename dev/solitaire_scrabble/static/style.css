@@ -125,7 +125,15 @@ a {
     display: flex;
 }
 
-.hand {
+.start-button {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+
+}
+
+#hand {
 
     width: 100%;
     display: flex;
@@ -199,12 +207,13 @@ a {
     font-size: 20px;
 }
 
-.board {
-    display: grid;
-    grid-template-columns: repeat(100, 1fr);
-    align-items: center;
-    max-width: 800px;
+#board {
     overflow-x: auto;
+
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .bonus-slot {
@@ -218,8 +227,13 @@ a {
     font-size: 20px;
 }
 
-.word-score {
+#word-score {
     font-size: 20px;
+    text-align: center;
+}
+
+#score {
+    font-size: 15px;
     text-align: center;
 }
 
