@@ -26,7 +26,6 @@ caption,
 th,
 td,
 form,
-table,
 article,
 aside,
 details,
@@ -225,6 +224,20 @@ a {
     text-align: center;
     line-height: 50px;
     font-size: 20px;
+}
+
+#games-history {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+table {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #word-score {

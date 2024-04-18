@@ -3,7 +3,7 @@ import itertools
 from typing import List, Dict
 import random
 
-from dev.solitaire_scrabble.defaults import default_bag
+from ..defaults import default_bag
 
 def generate_board(length: int = 20, bonus_types: List = ['2x', '3x'], prob_none: int = 0.75):
     """"

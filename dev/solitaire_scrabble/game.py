@@ -1,150 +1,168 @@
 import string
 import json
-from flask import (
-    jsonify, session, g
-)
-
 
 from flask import (
-    Blueprint, render_template, redirect, url_for, request
+    Blueprint, render_template, redirect, url_for, request, jsonify, session, g
     )
 
 from solitaire_scrabble.db import get_db
 
+from .generation import generate_board, generate_random_letters
+
 bp = Blueprint('game', __name__, url_prefix='/game')
+
+
+@bp.route('/new_game/<int:user_id>', methods=['POST'])
+def create_new_game(user_id):
+    """
+    Creates a new game for the given user_id.
+    """
+
+    if (session.get('user_id') != user_id) and (session.get('user_id') != 'Guest'):
+        return jsonify({'error': 'Unauthorized access'}), 403
+
+    sequence = generate_random_letters()
+    board = generate_board()
+
+    if not user_id:
+        user_id = "Guest"
+
+    db = get_db()
+    db.execute(
+        'INSERT INTO sequences (sequence) VALUES (?)', (json.dumps(sequence),)
+    )
+
+    sequence_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
+
+    db.execute(
+        'INSERT INTO boards (board) VALUES (?)', (json.dumps(board),)
+    )
+
+    board_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
+
+    db.commit(
+        'INSERT INTO game (user_id, sequence_id, board_id, score) VALUES (?, ?, ?, ?)',
+        (user_id,sequence_id,board_id, 0)
+    )
+
+@bp.route('/games/<int:user_id>', methods=['GET'])
+def get_games(user_id):
+
+    if (session.get('user_id') != user_id) and (session.get('user_id') != 'Guest'):
+        return jsonify({'error': 'Unauthorized access'}), 403
+
+    db = get_db()
+    games = db.execute(
+        'SELECT id, score, complete FROM game WHERE user_id = ?', (user_id,)
+    ).fetchall()
+
+    return jsonify({'games': [{'id': game['id'], 'score': game['score'], 'complete': game['complete']} for game in games]})
 
 @bp.route('/')
 def index():
+    return render_template('game/index.html')
+
+@bp.route('/game/<int:game_id>', methods=['POST'])
+def set_game_session(game_id):
+    db = get_db()
+    game = db.execute(
+        'SELECT user_id FROM game WHERE id = ?', (game_id,)
+    ).fetchone()
+
+    if game['user_id'] != session.get('user_id') and game['user_id'] != 'Guest':
+        return jsonify({'error': 'Unauthorized access'}), 403
+
+    session['game_id'] = game_id
+
+    return redirect(url_for('game.index'))
+
+@bp.route('/users', methods=['GET'])
+def get_users():
     db = get_db()
     users = db.execute(
         'SELECT username, score FROM user'
     ).fetchall()
-    
-    return render_template('game/index.html',
-        users=[{'username': user['username'], 'score': user['score']} for user in users]
-    )
 
-@bp.route('/start', methods=['GET'])
-def start():
-    user_id = session.get('user_id')
-    if not user_id:
-        user_id = "Guest"
+    return jsonify({'users': [{'username': user['username'], 'score': user['score']} for user in users]})
 
-    starting_sequence = generate_random_letters()
-    board = generate_board()
-    hand = []
-    sequence, hand = draw_tiles(starting_sequence, hand, 7)
-
-    db = get_db()
-    db.execute(
-        'INSERT INTO game (user_id, board, starting_sequence, hand, sequence, score) VALUES (?, ?, ?, ?, ?, ?)',
-        (user_id, json.dumps(board), json.dumps(starting_sequence), json.dumps(hand), json.dumps(sequence), 0)
-    )
-    db.commit()
-
-    game_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
-    session['game_id'] = game_id
-    return jsonify({'game_id': game_id}), 201
-
-@bp.route('/<int:game_id>', methods=['GET'])
-def getData(game_id):
+@bp.route('/restart/<int:game_id>', methods=['GET'])
+def clear(game_id):
     db = get_db()
     game = db.execute(
-        'SELECT * FROM game WHERE id = ?',
+        'SELECT user_id FROM game WHERE id = ?', (game_id,)
+    ).fetchone()
+
+    return redirect(url_for('game.index'))
+
+@bp.route('/board/<int:board_id>', methods=['GET'])
+def get_board(board_id):
+
+    db = get_db()
+    board = db.execute(
+        'SELECT board FROM boards WHERE id = ?',
+        (board_id,)
+    ).fetchone()
+
+    return jsonify({'board': json.loads(board['board'])})
+
+@bp.route('/<int:game_id>/hand', methods=['GET'])
+def get_hand(game_id):
+    db = get_db()
+    game = db.execute(
+        'SELECT user_id, played_words, board_id FROM game WHERE id = ?',
         (game_id,)
     ).fetchone()
 
-    if game['user_id'] == session.get('user_id') or game['user_id'] == 'Guest':
-        return jsonify({
-            'board': json.loads(game['board']),
-            'score': game['score'],
-            'sequence': json.loads(game['sequence']),
-            'hand': json.loads(game['hand']),
-            'tile_scores': scrabble_scores,
-        })
-    else:
+    if game['user_id'] != session.get('user_id') and game['user_id'] != 'Guest':
         return jsonify({'error': 'Unauthorized access'}), 403
+    
+    board = db.execute(
+        'SELECT board FROM boards WHERE id = ?',
+        (game['board_id'],)
+    ).fetchone()
+    board = json.loads(board['board'])
+    #keep drawing from sequence until current hand
 
-@bp.route('/clear', methods=['GET'])
-def clear():
-    session.clear()
-    return redirect(url_for('game.index'))
 
-@bp.route('/<int:game_id>', methods=['POST'])
-def submit(game_id):
-    print('submitting word')
+    return jsonify({'hand': json.loads(game['hand'])})
 
-    data = request.get_json()
-    played_board = json.loads(data['played_board'])
-
-    print(played_board)
-
+@bp.route('/<int:game_id>/played_words', methods=['GET'])
+def get_played_words(game_id):
     db = get_db()
     game = db.execute(
-        'SELECT * FROM game WHERE id = ?', (game_id,)
+        'SELECT user_id, played_words FROM game WHERE id = ?',
+        (game_id,)
     ).fetchone()
 
-    if not game:
-        return jsonify({'error': 'Game not found'}), 404
-
-    user = game['user_id']
-
-    if user != session.get('user_id') and user != 'Guest':
+    if game['user_id'] != session.get('user_id') and game['user_id'] != 'Guest':
         return jsonify({'error': 'Unauthorized access'}), 403
 
-    board = json.loads(game['board'])
-    print(board)
+    return jsonify({'played_words': json.loads(game['played_words'])})
 
-    already_played = 0
-    for i, symbol in enumerate(board):
-        if symbol is None:
-            break
-        elif symbol[-1] == '*':
-            already_played += 1
-    
-    played_board = played_board[already_played:]
-    board = board[already_played:]
-    print(played_board)
-    print(board)
+@bp.route('/<int:game_id>/score', methods=['GET'])
+def get_score(game_id):
+    db = get_db()
+    game = db.execute(
+        'SELECT user_id, score FROM game WHERE id = ?',
+        (game_id,)
+    ).fetchone()
 
+    if game['user_id'] != session.get('user_id') and game['user_id'] != 'Guest':
+        return jsonify({'error': 'Unauthorized access'}), 403
 
-    hand = json.loads(game['hand'])
-    print(hand)
-
-    word = ''
-    for letter in played_board:
-        if letter is not None:
-            word += letter
-        else: break
-    print(f'played word: {word}')
-    
-    for char in word:
-        if char in hand:
-            hand.remove(char)
-        else: return jsonify({'error': 'Invalid word. Please try again.'}), 400
-
-    if word in all_words:
-        db = get_db()
-        db.execute(
-            'UPDATE game SET score = score + ? WHERE id = ?',
-            (calculate_word_score(word, board), game_id)
-        )
-
-        # I need to update the board, hand, sequence.
+    return jsonify({'score': game['score']})
 
 
-        new_sequence, new_hand = draw_tiles(json.loads(game['sequence']), hand, 7-len(word))
-        for i, letter in enumerate(word):
-            board[i] = letter + '*'
 
-        db.execute(
-            'UPDATE game SET board = ?, hand = ?, sequence = ? WHERE id = ?',
-            (json.dumps(board), json.dumps(new_hand), json.dumps(new_sequence), game_id)
-        )
+@bp.route('.<int:game_id>/complete', methods=['GET'])
+def complete(game_id):
+    db = get_db()
+    game = db.execute(
+        'SELECT user_id, score FROM game WHERE id = ?',
+        (game_id,)
+    ).fetchone()
 
-        db.commit()
-        return jsonify({'success': 'Word submitted successfully!'}), 201
+    if game['user_id'] != session.get('user_id') and game['user_id'] != 'Guest':
+        return jsonify({'error': 'Unauthorized access'}), 403
 
-    else: 
-        print('word is invalid')
-        return jsonify({'error': 'Invalid word. Please try again.'}), 200
+    return jsonify({'score': game['score']})

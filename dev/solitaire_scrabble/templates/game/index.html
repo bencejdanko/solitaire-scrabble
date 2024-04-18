@@ -6,23 +6,8 @@
 <div id="app"></div>
 
 <script>
-
-    let green = '#3afd47be'
-
-    const hand = ['a', 'b', 'c'] // {{ hand|default('[]') | tojson | safe}}
-
-
-    const board = ['x2', null, null, 'x3'] // {{ board|default('[]') | tojson | safe}}
-    const score = {{ score |default ('0') | tojson | safe }}
-
-
-    const sequence = ['a', 'b', 'c'] // {{ sequence|default ('[]') | tojson | safe}}
-    const tile_scores = {{ tile_scores|default ('{}') | tojson | safe}}
-    const users = {{ users_serialized|default ('[]') | tojson | safe}}
-    const error = ""
-    let played_board = Array(board.length).fill(null)
-
     const game_id = {{ session.get('game_id') |default ('null') | tojson | safe}}
+    const user_id = {{ session.get('user_id') |default ('null') | tojson | safe}}
 </script>
 
 {% set js_files = [
@@ -36,7 +21,8 @@
 'sequence',
 'error',
 'controls',
-'start_button'
+'start_button',
+'games_history'
 ] %}
 
 {% for js_file in js_files %}

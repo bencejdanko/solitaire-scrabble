@@ -1,4 +1,18 @@
-import { fetchGame } from "./query.js";
+async function startNewGame() {
+
+    await fetch('/new_game/' + user_id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id: user_id
+        })
+    });
+
+    window.location.reload();
+        
+}
 
 export function setupStartButton(element) {
     const setStartButton = () => {
@@ -7,7 +21,7 @@ export function setupStartButton(element) {
         `;
 
         document.querySelector('#start-button').addEventListener('click', async () => {
-            await fetchGame();
+            await startNewGame();
         });
     }
 
