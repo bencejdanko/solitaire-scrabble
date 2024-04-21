@@ -8,73 +8,84 @@ from flask import (
 from solitaire_scrabble.db import get_db
 
 from .generation import generate_board, generate_random_letters
+from .compute import draw_hand
+
+import jwt
+key = 'verysecretkey'
 
 bp = Blueprint('game', __name__, url_prefix='/game')
 
 
-@bp.route('/new_game/<int:user_id>', methods=['POST'])
-def create_new_game(user_id):
+@bp.route('/new_game', methods=['GET'])
+def create_new_game():
     """
-    Creates a new game for the given user_id.
+    JWT-store base game state
+    """
+    
+    base_sequence = generate_random_letters()
+    base_board = generate_board()
+    board = base_board.copy()
+    score = 0
+    played_words = []
+    complete = False
+    sequence, hand = draw_hand(base_sequence)
+
+    encoded_jwt = jwt.encode({
+        'base_sequence': base_sequence,
+        'base_board': base_board,
+        'sequence': sequence,
+        'board': board,
+        'score': score,
+        'played_words': played_words,
+        'complete': complete,
+        'hand': hand
+    }, key, algorithm='HS256')
+
+    response = jsonify({'game': encoded_jwt})
+    return response, 200
+
+@bp.route('/clear', methods=['POST'])
+def clear():
+    """
+    Returns the game state to the original state
     """
 
-    if (session.get('user_id') != user_id) and (session.get('user_id') != 'Guest'):
-        return jsonify({'error': 'Unauthorized access'}), 403
+    data = request.json
+    game = data.get('game')
+    if not game:
+        return jsonify({'message': 'No game provided'}), 400
 
-    sequence = generate_random_letters()
-    board = generate_board()
+    decoded_jwt = jwt.decode(game, key, algorithms=['HS256'])
 
-    if not user_id:
-        user_id = "Guest"
+    base_sequence = decoded_jwt['base_sequence']
+    base_board = decoded_jwt['base_board']
+    board = base_board.copy()
+    score = 0
+    played_words = []
+    complete = False
+    sequence, hand = draw_hand(base_sequence)
 
-    db = get_db()
-    db.execute(
-        'INSERT INTO sequences (sequence) VALUES (?)', (json.dumps(sequence),)
-    )
+    encoded_jwt = jwt.encode({
+        'base_sequence': base_sequence,
+        'base_board': base_board,
+        'sequence': sequence,
+        'board': board,
+        'score': score,
+        'played_words': played_words,
+        'complete': complete,
+        'hand': hand
+    }, key, algorithm='HS256')
 
-    sequence_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
-
-    db.execute(
-        'INSERT INTO boards (board) VALUES (?)', (json.dumps(board),)
-    )
-
-    board_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
-
-    db.commit(
-        'INSERT INTO game (user_id, sequence_id, board_id, score) VALUES (?, ?, ?, ?)',
-        (user_id,sequence_id,board_id, 0)
-    )
+    response = jsonify({'game': encoded_jwt})
+    return response, 200
 
 @bp.route('/games/<int:user_id>', methods=['GET'])
 def get_games(user_id):
-
-    if (session.get('user_id') != user_id) and (session.get('user_id') != 'Guest'):
-        return jsonify({'error': 'Unauthorized access'}), 403
-
-    db = get_db()
-    games = db.execute(
-        'SELECT id, score, complete FROM game WHERE user_id = ?', (user_id,)
-    ).fetchall()
-
-    return jsonify({'games': [{'id': game['id'], 'score': game['score'], 'complete': game['complete']} for game in games]})
+    return None
 
 @bp.route('/')
 def index():
     return render_template('game/index.html')
-
-@bp.route('/game/<int:game_id>', methods=['POST'])
-def set_game_session(game_id):
-    db = get_db()
-    game = db.execute(
-        'SELECT user_id FROM game WHERE id = ?', (game_id,)
-    ).fetchone()
-
-    if game['user_id'] != session.get('user_id') and game['user_id'] != 'Guest':
-        return jsonify({'error': 'Unauthorized access'}), 403
-
-    session['game_id'] = game_id
-
-    return redirect(url_for('game.index'))
 
 @bp.route('/users', methods=['GET'])
 def get_users():
@@ -82,18 +93,8 @@ def get_users():
     users = db.execute(
         'SELECT username, score FROM user'
     ).fetchall()
-
     return jsonify({'users': [{'username': user['username'], 'score': user['score']} for user in users]})
-
-@bp.route('/restart/<int:game_id>', methods=['GET'])
-def clear(game_id):
-    db = get_db()
-    game = db.execute(
-        'SELECT user_id FROM game WHERE id = ?', (game_id,)
-    ).fetchone()
-
-    return redirect(url_for('game.index'))
-
+    
 @bp.route('/board/<int:board_id>', methods=['GET'])
 def get_board(board_id):
 
@@ -152,9 +153,7 @@ def get_score(game_id):
 
     return jsonify({'score': game['score']})
 
-
-
-@bp.route('.<int:game_id>/complete', methods=['GET'])
+@bp.route('<int:game_id>/complete', methods=['GET'])
 def complete(game_id):
     db = get_db()
     game = db.execute(

@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple
 
-from dev.solitaire_scrabble.defaults import scrabble_scores
+from ..defaults import scrabble_scores
 
 def calculate_word_score(word: str, board: List[str], scrabble_scores: Dict[str, int] = scrabble_scores) -> int:
     """

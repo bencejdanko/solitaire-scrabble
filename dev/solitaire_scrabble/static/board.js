@@ -1,7 +1,7 @@
 import { setupBoardTile } from "./board_tile.js"
 
-export function setupBoard(element, board) {
-    const setBoard = (board) => {
+export function setupBoard(element) {
+    const setBoard = () => {
         const tilesHTML = board.map((tile, i) => `
             <div id="tile-${i}"></div>
         `).join('');
@@ -16,5 +16,5 @@ export function setupBoard(element, board) {
         });
     }
 
-    setBoard(board);
+    setBoard();
 }

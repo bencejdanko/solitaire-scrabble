@@ -1,17 +1,16 @@
 async function startNewGame() {
 
-    await fetch('/new_game/' + user_id, {
-        method: 'POST',
+    const response = await fetch(url + '/game/new_game', {
+        method: 'GET',
         headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            user_id: user_id
-        })
+            'Content-Type': 'application/json',
+        }
     });
 
+    const gameResponse = await response.json();
+    localStorage.setItem('game', gameResponse.game);
     window.location.reload();
-        
+    
 }
 
 export function setupStartButton(element) {

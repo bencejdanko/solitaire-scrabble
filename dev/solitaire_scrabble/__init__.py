@@ -5,6 +5,7 @@ import os
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
+
     app.jinja_env.auto_reload = True
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.config.from_mapping(
@@ -35,5 +36,12 @@ def create_app(test_config=None):
 
     from . import game
     app.register_blueprint(game.bp)
+
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
 
     return app

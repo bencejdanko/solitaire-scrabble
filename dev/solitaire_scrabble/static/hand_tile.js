@@ -11,7 +11,7 @@ export function setupHandTile(element, letter, value) {
     element.setAttribute('draggable', 'true')
 
     element.addEventListener('dragstart', (e) => {
-
+        
     })
 
     element.addEventListener('dragend', (e) => {

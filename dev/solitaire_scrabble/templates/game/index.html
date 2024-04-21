@@ -1,13 +1,56 @@
-{% extends 'base.html' %}
-
-{% block content %}
-
 <title>Solitaire Scrabble</title>
 <div id="app"></div>
 
 <script>
-    const game_id = {{ session.get('game_id') |default ('null') | tojson | safe}}
-    const user_id = {{ session.get('user_id') |default ('null') | tojson | safe}}
+    const url = 'http://localhost:5000'
+
+    const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
+    const user = userCookie ? jwtCookie.split('=')[1] : null;
+
+    let username,
+        user_id,
+        sequence,
+        board,
+        score,
+        played_words,
+        complete,
+        hand
+
+    if (!user) {
+        username = null
+        user_id = null
+    } else { 
+        try {
+            const payload = user.split('.')[1]
+            const decoded = atob(payload)
+            const info = JSON.parse(decoded)
+            username = info.username
+            user_id = info.user_id
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    let game = localStorage.getItem('game')
+
+    if (game) {
+        const payload = game.split('.')[1]
+        let decoded;
+        try {
+            decoded = atob(payload);
+            const info = JSON.parse(decoded)
+            sequence = info.sequence
+            board = info.board
+            score = info.score
+            played_words = info.played_words
+            complete = info.complete
+            hand = info.hand
+        } catch (error) {
+            game = null
+            console.log(error)
+        } 
+    }
+
 </script>
 
 {% set js_files = [
@@ -22,7 +65,10 @@
 'error',
 'controls',
 'start_button',
-'games_history'
+'games_history',
+'nav',
+'sequence_tile',
+'leaderboard'
 ] %}
 
 {% for js_file in js_files %}
@@ -30,5 +76,3 @@
 {% endfor %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-{% endblock content %}

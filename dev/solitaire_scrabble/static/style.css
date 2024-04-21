@@ -140,7 +140,7 @@ a {
     align-items: center;
 }
 
-.sequence {
+#sequence {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -193,6 +193,7 @@ a {
 .game {
     display: grid;
     grid-template-columns: 1fr;
+    grid-gap: 10px;
 }
 
 .empty-slot {
@@ -238,6 +239,7 @@ table {
     display: flex;
     justify-content: center;
     align-items: center;
+    border-spacing: 1em;
 }
 
 #word-score {

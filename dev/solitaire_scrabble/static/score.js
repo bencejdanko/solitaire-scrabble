@@ -1,13 +1,13 @@
-export function setupScore(element,score) {
+export function setupScore(element) {
 
-    const setScore = (score) => {
+    const setScore = () => {
         element.innerHTML = `
-            <div class="score>
+            <div class='score'>
                 <span class="">current score: ${score}</span>
             </div>
         `;
     }
 
-    setScore(score)
+    setScore()
 
 }
