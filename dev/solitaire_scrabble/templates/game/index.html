@@ -1,56 +1,9 @@
 <title>Solitaire Scrabble</title>
+<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 <div id="app"></div>
 
 <script>
-    const url = 'http://localhost:5000'
-
-    const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
-    const user = userCookie ? jwtCookie.split('=')[1] : null;
-
-    let username,
-        user_id,
-        sequence,
-        board,
-        score,
-        played_words,
-        complete,
-        hand
-
-    if (!user) {
-        username = null
-        user_id = null
-    } else { 
-        try {
-            const payload = user.split('.')[1]
-            const decoded = atob(payload)
-            const info = JSON.parse(decoded)
-            username = info.username
-            user_id = info.user_id
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    let game = localStorage.getItem('game')
-
-    if (game) {
-        const payload = game.split('.')[1]
-        let decoded;
-        try {
-            decoded = atob(payload);
-            const info = JSON.parse(decoded)
-            sequence = info.sequence
-            board = info.board
-            score = info.score
-            played_words = info.played_words
-            complete = info.complete
-            hand = info.hand
-        } catch (error) {
-            game = null
-            console.log(error)
-        } 
-    }
-
+    let url = 'http://localhost:5000'
 </script>
 
 {% set js_files = [

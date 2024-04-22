@@ -1,4 +1,4 @@
-export function setupScore(element) {
+export function setupScore(element, score = 0) {
 
     const setScore = () => {
         element.innerHTML = `

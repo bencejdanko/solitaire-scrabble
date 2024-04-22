@@ -1,6 +1,32 @@
-export function setupControls(element) {
+export function setupControls(element, played) {
     
-    function submit() {
+    async function submit() {
+        let played_word = ''
+        for (let i = 0; i < played.length; i++) {
+            if (played[i]) {
+                played_word += played[i].letter
+            } else {
+                break
+            }
+        }
+
+        let response = await fetch(url + '/game/play', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                game: localStorage.getItem('game'),
+                word: played_word
+            })
+        })
+
+        let data = await response.json()
+
+        if (!response.ok) {
+            const message = `An error has occured: ${data.message}`;
+            throw new Error(message);
+        }
 
     }
 

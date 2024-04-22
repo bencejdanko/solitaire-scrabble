@@ -8,20 +8,6 @@ async function getGames() {
     return games.json();
 }
 
-async function setGameSession(game_id) {
-    let data = await fetch('/game/' + game_id, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            user_id: user_id
-        })
-
-    });
-    return data.json();
-}
-
 export async function setupGamesHistory(element) {
     const setGamesHistory = async () => {
 

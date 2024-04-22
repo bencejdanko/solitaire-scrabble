@@ -9,7 +9,45 @@ import { setupSequence } from "./sequence.js";
 import { setupControls } from "./controls.js";
 import { setupLeaderboard } from "./leaderboard.js";
 
+const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
+const user = userCookie ? userCookie.split('=')[1] : null;
+
+let username,
+    user_id
+
+if (!user) {
+    username = null
+    user_id = null
+} else {
+    try {
+        const payload = user.split('.')[1]
+        const decoded = atob(payload)
+        const info = JSON.parse(decoded)
+        username = info.username
+        user_id = info.user_id
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+let game = localStorage.getItem('game');
+
 if (game) {
+
+    const payload = game.split('.')[1];
+    let info;
+    try {
+        info = JSON.parse(atob(payload));
+    } catch (e) {
+        console.error(e);
+        console.log("Invalid game! Clearing...")
+        localStorage.removeItem('game');
+        window.location.reload();
+    }
+
+    let { board, hand, sequence, score, played_words, complete } = info;
+    let played = Array(board.length);
+
     document.querySelector('#app').innerHTML = /*html*/ `
         <div class="game">
             <div id='nav'></div>
@@ -23,13 +61,13 @@ if (game) {
         </div>
     `;
 
-    setupBoard(document.querySelector('#board'))
+    setupBoard(document.querySelector('#board'), board, played)
     setupWordScore(document.querySelector('#word-score'))
-    setupScore(document.querySelector('#score'))
-    setupHand(document.querySelector('#hand'))
-    setupSequence(document.querySelector(`#sequence`))
-    setupControls(document.querySelector('#controls'))
-    
+    setupScore(document.querySelector('#score'), score)
+    setupHand(document.querySelector('#hand'), hand)
+    setupSequence(document.querySelector(`#sequence`), sequence)
+    setupControls(document.querySelector('#controls'), played)
+
 } else {
 
     document.querySelector('#app').innerHTML = /*html*/ `
@@ -44,5 +82,5 @@ if (game) {
     setupGamesHistory(document.querySelector('#games-history'));
 }
 
-setupNav(document.querySelector('#nav'));
+setupNav(document.querySelector('#nav'), username);
 setupLeaderboard(document.querySelector('#leaderboard'));

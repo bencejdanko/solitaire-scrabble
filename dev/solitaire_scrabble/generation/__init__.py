@@ -5,7 +5,7 @@ import random
 
 from ..defaults import default_bag
 
-def generate_board(length: int = 20, bonus_types: List = ['2x', '3x'], prob_none: int = 0.75):
+def generate_board(length: int = 20, bonus_types: List = [2, 3], prob_none: int = 0.5):
     """"
     Generate a random board with the given length and bonus types.
     
@@ -14,7 +14,7 @@ def generate_board(length: int = 20, bonus_types: List = ['2x', '3x'], prob_none
     prob_none is the probability of a cell being empty.
 
     Example output would be: 
-    [None, '2x', None, '3x', None, None, '2x', '3x', None, None, '2x', None, '3x', None, None, '2x', '3x', None, None, '2x', '3x']
+    [None, 2, None, 3, None, None, 2, 3, None, None, 2, None, 3, None, None, 2, 3, None, None, 2, 3]
     """
     sequence = []
     for _ in range(length):

@@ -1,4 +1,4 @@
-export function setupNav(element) {
+export function setupNav(element, username) {
     const setNav = () => {
 
         element.innerHTML = `
