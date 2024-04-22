@@ -1,6 +1,24 @@
 from typing import Dict, List, Tuple
 
-from ..defaults import scrabble_scores
+import itertools
+from ..defaults import scrabble_scores, all_words
+
+def hand_from_word(letters: List[str], word: str) -> Tuple[List[str], Exception]:
+    """
+    Check if a list of letters can make a word, and produce a new list of letters if they can.
+
+    letters is a list of letters.
+    word is the word to check.
+
+    Example output would be:
+    hand_from_word(['a', 'b', 'c'], 'cab')
+    ['a', 'b'], None
+    """
+    for letter in word:
+        if letter not in letters:
+            return None, Exception(f"Letter {letter} not in hand.")
+        letters.remove(letter)
+    return letters, None
 
 def calculate_word_score(word: str, board: List[str], scrabble_scores: Dict[str, int] = scrabble_scores) -> int:
     """
@@ -11,14 +29,14 @@ def calculate_word_score(word: str, board: List[str], scrabble_scores: Dict[str,
     scrabble_scores is a dictionary of scrabble scores.
 
     Example output would be:
-    calculate_word_score('hello', ['2x', None, '3x', None, None], scrabble_scores)
+    calculate_word_score('hello', [2, None, 3, None, None], scrabble_scores)
     (4*2) + (1) + (1*3) + (1) + (1) = 14
     """
     score: int = 0
     for i, letter in enumerate(word):
         base_score: int = scrabble_scores[letter]
         if board[i]: 
-            multiplier: int = int(board[i][0])
+            multiplier: int = board[i]
             score += base_score * multiplier
         else: 
             score += base_score
@@ -45,33 +63,47 @@ def draw_hand(tile_sequence: List[str], current_hand: List[str] = [], hand_size:
         new_hand.append(new_sequence.pop(0))
     return new_sequence, new_hand
 
-def MaxScoringWord(tile_sequence: List[str], current_hand: List[str], all_words: List[str], board: List[str]) -> Tuple[str, int]:
+def max_scoring_word(tile_sequence: List[str], current_hand: List[str], board: List[str]) -> Tuple[str, int]:
     """
-    Given a sequence of tiles, a current hand, a list of all possible words, and a board, return the word with the maximum score and the score.
+    Given a current hand and a board, return the word with the maximum score and the score.
 
-    tile_sequence is a sequence of tiles.
     current_hand is the current hand.
-    all_words is a list of all possible words.
     board is the board to calculate the score on.
 
     Example output would be:
-    MaxScore(['a', 'b', 'c', 'd', 'e', 'f', 'g'], ['a', 'b'], ['ab', 'ad', 'bad', 'cab', 'cad', 'dab'], ['2x', None, '3x', None, None])
+    MaxScore(['a', 'b', 'c', 'd', 'e', 'f', 'g'], ['2x', None, '3x', None, None])
     ('bad', 14)
     """
-    max_score: int = 0
-    max_word: str = ''
-    for word in all_words:
-        new_sequence, new_hand = draw_hand(tile_sequence, current_hand)
-        score: int = calculate_word_score(word, board)
-        if score > max_score:
-            max_score = score
-            max_word = word
-    return max_word, max_score
+    words = possible_words(current_hand)
+    if len(words) == 0:
+        return None, 0
 
-def MaxScore(tile_sequence: List[str], board: List[str], hand: List[str]) -> Tuple[str, int]:
+    best_word = max(words, key=lambda word: calculate_word_score(word, board))
+    return best_word, calculate_word_score(best_word, board)
+    
+def max_score(tile_sequence: List[str], board: List[str], hand: List[str]) -> Tuple[str, int]:
     """
     Given a game subset (upcoming tile sequence, the board, and the hand), evaluate the maximum scoring 
     word plays, and return the value of the maximum scoring sequence, as well as the highest scoring word
     in that sequence.
+
+    This is a dynamic programming problem, with a recursive solution.
     """
+    
+
     return None, 0
+
+def possible_words(letters: List[str]) -> List[str]:
+    """
+    Find all possible words given a list of letters and a set of all possible words.
+
+    letters is a list of letters.
+    all_words is a set of all possible words.
+    """
+    possible_words: List[str] = []
+    for length in range(1, len(letters) + 1):
+        for perm in itertools.permutations(letters, length):
+            word = ''.join(perm)
+            if word in all_words:
+                possible_words.append(word)
+    return possible_words

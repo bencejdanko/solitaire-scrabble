@@ -4,7 +4,7 @@ export function setupBoard(element, board=[], played) {
 
     const setBoard = (letter_scores) => {
         const tilesHTML = board.map((tile, i) => `
-            <div id="tile-${i}"></div>
+            <div id="tile-${i}" class="board-tile"></div>
         `).join('');
 
         element.innerHTML =

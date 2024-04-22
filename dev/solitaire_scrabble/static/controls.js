@@ -1,5 +1,7 @@
+import { setupMessage } from "./message.js"
+
 export function setupControls(element, played) {
-    
+
     async function submit() {
         let played_word = ''
         for (let i = 0; i < played.length; i++) {
@@ -24,17 +26,41 @@ export function setupControls(element, played) {
         let data = await response.json()
 
         if (!response.ok) {
-            const message = `An error has occured: ${data.message}`;
+            setupMessage(document.querySelector('#message'), { status: 4, message: data.message })
             throw new Error(message);
         }
 
+        localStorage.setItem('game', data.game)
+        window.location.reload()
+
     }
 
-    async function clear() {
+    async function hint() {
+        let response = await fetch(url + '/game/hint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                game: localStorage.getItem('game')
+            })
+        })
+
+        let data = await response.json()
+
+        if (!response.ok) {
+            setupMessage(document.querySelector('#message'), { status: 4, message: data.message })
+            throw new Error(message);
+        }
+
+        setupMessage(document.querySelector('#message'), { status: 2, message: data.hint })
+    }
+
+    async function restart() {
 
         console.log(localStorage.getItem('game'));
 
-        const response = await fetch(url + '/game/clear', {
+        const response = await fetch(url + '/game/restart', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -44,13 +70,63 @@ export function setupControls(element, played) {
             })
         });
 
+        let data = await response.json();
+
         if (!response.ok) {
-            const message = `An error has occured: ${response.status}`;
+            setupMessage(document.querySelector('#message'), { status: 4, message: data.message })
             throw new Error(message);
         }
 
-        const gameResponse = await response.json();
-        localStorage.setItem('game', gameResponse.game);
+        localStorage.setItem('game', data.game);
+        window.location.reload();
+    }
+
+    async function clear() {
+        window.location.reload();
+    }
+
+    async function finish() {
+
+        const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
+        const user = userCookie ? userCookie.split('=')[1] : null;
+
+        let username,
+            user_id
+
+        if (!user) {
+            username = null
+            user_id = null
+        } else {
+            try {
+                const payload = user.split('.')[1]
+                const decoded = atob(payload)
+                const info = JSON.parse(decoded)
+                username = info.username
+                user_id = info.user_id
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        const response = await fetch(url + '/game/finish', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                game: localStorage.getItem('game'),
+                user_id: user_id
+            })
+        });
+
+        let data = await response.json();
+
+        if (!response.ok) {
+            setupMessage(document.querySelector('#message'), { status: 4, message: data.message })
+            throw new Error(message);
+        }
+
+        localStorage.removeItem('game');
         window.location.reload();
     }
 
@@ -58,19 +134,25 @@ export function setupControls(element, played) {
         localStorage.removeItem('game');
         window.location.reload();
     }
-    
+
     const setControls = () => {
         element.innerHTML = `
             <div class="controls">
                 <button id='submit'>submit</button>
                 <button id='restart'>restart</button>
                 <button id='new_game'>new game</button>
+                <button id='finish'>finish</button>
+                <button id='clear'>clear</button>
+                <button id='hint'>hint</button>
             </div>
         `;
 
         document.querySelector('#submit').addEventListener('click', submit);
-        document.querySelector('#restart').addEventListener('click', clear);
+        document.querySelector('#restart').addEventListener('click', restart);
         document.querySelector('#new_game').addEventListener('click', new_game);
+        document.querySelector('#finish').addEventListener('click', finish);
+        document.querySelector('#clear').addEventListener('click', clear);
+        document.querySelector('#hint').addEventListener('click', hint);
     }
 
     setControls()

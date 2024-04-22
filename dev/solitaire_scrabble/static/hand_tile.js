@@ -11,7 +11,7 @@ export function setupHandTile(element, letter, value, letter_score) {
 
     element.setAttribute('draggable', 'true')
 
-    const payload = { letter, value }
+    const payload = { letter, value, elementId: element.id }
 
     element.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', JSON.stringify(payload))
@@ -19,7 +19,6 @@ export function setupHandTile(element, letter, value, letter_score) {
 
     element.addEventListener('dragend', (e) => {
         e.preventDefault()
-        element.innerHTML = ``;
     })
 
     setHandTile()

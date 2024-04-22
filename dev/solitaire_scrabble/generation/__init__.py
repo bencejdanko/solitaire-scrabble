@@ -5,7 +5,7 @@ import random
 
 from ..defaults import default_bag
 
-def generate_board(length: int = 20, bonus_types: List = [2, 3], prob_none: int = 0.5):
+def generate_board(length: int = 20, bonus_types: List = [2, 3], prob_none: int = 0.75):
     """"
     Generate a random board with the given length and bonus types.
     
@@ -43,18 +43,3 @@ def generate_random_letters(count: int = 20, default_bag: Dict[str, int] = defau
                 break
     random.shuffle(letters)
     return letters
-
-def generate_possible_words(letters, all_words):
-    """
-    Generate a list of possible words given a list of letters and a set of all possible words.
-
-    letters is a list of letters.
-    all_words is a set of all possible words.
-    """
-    possible_words: List[str] = []
-    for length in range(1, len(letters) + 1):
-        for perm in itertools.permutations(letters, length):
-            word = ''.join(perm)
-            if word in all_words:
-                possible_words.append(word)
-    return possible_words

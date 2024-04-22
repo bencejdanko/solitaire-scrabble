@@ -8,6 +8,7 @@ import { setupNav } from "./nav.js";
 import { setupSequence } from "./sequence.js";
 import { setupControls } from "./controls.js";
 import { setupLeaderboard } from "./leaderboard.js";
+import { setupMessage } from "./message.js";
 
 const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
 const user = userCookie ? userCookie.split('=')[1] : null;
@@ -52,7 +53,8 @@ if (game) {
         <div class="game">
             <div id='nav'></div>
             <div id="board"></div>
-            <div id="word-score"></div>
+            <div id="message"></div>
+            <!-- <div id="word-score"></div> -->
             <div id="score"></div>
             <div id="hand"></div>
             <div id='sequence'></div>
@@ -62,7 +64,7 @@ if (game) {
     `;
 
     setupBoard(document.querySelector('#board'), board, played)
-    setupWordScore(document.querySelector('#word-score'))
+    //setupWordScore(document.querySelector('#word-score'))
     setupScore(document.querySelector('#score'), score)
     setupHand(document.querySelector('#hand'), hand)
     setupSequence(document.querySelector(`#sequence`), sequence)
@@ -74,12 +76,13 @@ if (game) {
         <div class="game">
             <div id='nav'></div>
             <div id="start-button"></div>
-            <div id="games-history"></div>
+            <div id="message"></div>
+            <!-- <div id="games-history"></div> -->
             <div id='leaderboard'></div>
         </div>
     `;
     setupStartButton(document.querySelector('#start-button'));
-    setupGamesHistory(document.querySelector('#games-history'));
+    // setupGamesHistory(document.querySelector('#games-history'));
 }
 
 setupNav(document.querySelector('#nav'), username);
