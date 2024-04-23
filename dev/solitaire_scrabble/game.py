@@ -8,7 +8,7 @@ from flask import (
 from solitaire_scrabble.db import get_db
 
 from .generation import generate_board, generate_random_letters
-from .compute import draw_hand, calculate_word_score, hand_from_word, max_scoring_word
+from .compute import draw_hand, calculate_word_score, hand_from_word, max_scoring_word, max_score
 from .defaults import scrabble_scores, default_bag, all_words
 
 import jwt
@@ -99,16 +99,16 @@ def hint():
     if complete:
         return jsonify({'message': 'Game is already complete'}), 400
 
-    best_word, _ = max_scoring_word(sequence, hand, board)
+    best_word, score = max_scoring_word(sequence, hand, board)
     if not best_word:
         return jsonify({'message': 'No possible words'}), 400
     
-    return jsonify({'hint': best_word}), 200
+    return jsonify({'word': best_word, 'score': score }), 200
 
-@bp.route('/restart', methods=['POST'])
-def restart():
+@bp.route('/complex_hint', methods=['POST'])
+def complex_hint():
     """
-    Returns the game state to the original state
+    Returns the highest theoretical score you can get on the board
     """
 
     data = request.json
@@ -120,15 +120,48 @@ def restart():
     if err:
         return jsonify({'message': str(err)}), 400
 
-    hand = []
+    sequence = decoded['sequence']
+    board = decoded['board']
+    complete = decoded['complete']
+    hand = decoded['hand']
+
+    if complete:
+        return jsonify({'message': 'Game is already complete'}), 400
+
+    max_result, max_words = max_score(sequence, board, hand)
+
+    return jsonify({'max_result': max_result, 'max_words': max_words}), 200
+
+@bp.route('/restart', methods=['POST'])
+def restart():
+    """
+    Returns the game state to the original state
+    """
+
+    print('restarting')
+
+    data = request.json
+    game = data.get('game')
+    if not game:
+        return jsonify({'message': 'No game provided'}), 400
+    
+    decoded, err = decode(game)
+    if err:
+        return jsonify({'message': str(err)}), 400
+
 
     base_sequence = decoded['base_sequence']
     base_board = decoded['base_board']
+
+    print(decoded)
+    print(base_sequence)
+    print(base_board)
+
     board = base_board.copy()
     score = 0
     played_words = []
     complete = False
-    sequence, hand = draw_hand(base_sequence, hand)
+    sequence, hand = draw_hand(base_sequence)
 
     encoded, err = encode(base_sequence, base_board, sequence, board, score, played_words, complete, hand)
 

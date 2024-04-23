@@ -5,7 +5,7 @@ from ..defaults import scrabble_scores, all_words
 
 def hand_from_word(letters: List[str], word: str) -> Tuple[List[str], Exception]:
     """
-    Check if a list of letters can make a word, and produce a new list of letters if they can.
+    Check if a list of letters can make a word, and if they can, remove their letters from the hand and return it.
 
     letters is a list of letters.
     word is the word to check.
@@ -14,6 +14,8 @@ def hand_from_word(letters: List[str], word: str) -> Tuple[List[str], Exception]
     hand_from_word(['a', 'b', 'c'], 'cab')
     ['a', 'b'], None
     """
+
+    letters = letters.copy()
     for letter in word:
         if letter not in letters:
             return None, Exception(f"Letter {letter} not in hand.")
@@ -54,8 +56,9 @@ def draw_hand(tile_sequence: List[str], current_hand: List[str] = [], hand_size:
     draw_hand(['a', 'b', 'c', 'd', 'e', 'f', 'g'], ['a', 'b'], 7)
     (['f', 'g'], ['a', 'b', 'a', 'b', 'c', 'd', 'e'])
     """
-    new_hand: List[str] = current_hand
-    new_sequence: List[str] = tile_sequence
+    new_hand: List[str] = current_hand.copy()
+    new_sequence: List[str] = tile_sequence.copy()
+
     while len(new_hand) < hand_size:
         # handle if the sequence is empty
         if not new_sequence:
@@ -80,30 +83,51 @@ def max_scoring_word(tile_sequence: List[str], current_hand: List[str], board: L
 
     best_word = max(words, key=lambda word: calculate_word_score(word, board))
     return best_word, calculate_word_score(best_word, board)
-    
-def max_score(tile_sequence: List[str], board: List[str], hand: List[str]) -> Tuple[str, int]:
+
+mem = {}
+def max_score(tile_sequence: List[str], board: List[str], hand: List[str], iterations: int = 2) -> Tuple[int, List[str]]:
     """
-    Given a game subset (upcoming tile sequence, the board, and the hand), evaluate the maximum scoring 
-    word plays, and return the value of the maximum scoring sequence, as well as the highest scoring word
-    in that sequence.
-
-    This is a dynamic programming problem, with a recursive solution.
+    Look for the highest scoring word placements, iterations moves ahead.
     """
+
+    hand_words = possible_words(hand.copy())
+
+    if iterations == 0:
+        return 0, hand_words
+
+    if len(hand_words) == 0:
+        return 0, hand_words
+
+    if len(tile_sequence) == 0:
+        return 0, hand_words
     
+    max_combo = (0, '')
 
-    return None, 0
+    for word in hand_words:
+        word_score = calculate_word_score(word, board)
+        new_hand, _ = hand_from_word(hand, word)
+        new_sequence, hand_drawn = draw_hand(tile_sequence, new_hand)
+        new_board = board[len(word):]
 
-def possible_words(letters: List[str]) -> List[str]:
+        new_hand_words = possible_words(hand_drawn)
+        for new_word in new_hand_words:
+            new_word_score = calculate_word_score(new_word, new_board)
+            if new_word_score + word_score > max_combo[0]:
+                max_combo = (new_word_score + word_score, word + ' ' + new_word)
+    
+    return max_combo
+
+def possible_words(letters: List[str]) -> set[str]:
     """
     Find all possible words given a list of letters and a set of all possible words.
 
     letters is a list of letters.
     all_words is a set of all possible words.
     """
-    possible_words: List[str] = []
+    possible_words: set[str] = set()
     for length in range(1, len(letters) + 1):
         for perm in itertools.permutations(letters, length):
             word = ''.join(perm)
             if word in all_words:
-                possible_words.append(word)
-    return possible_words
+                possible_words.add(word)
+    return list(possible_words)

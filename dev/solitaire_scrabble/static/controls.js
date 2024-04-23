@@ -53,7 +53,30 @@ export function setupControls(element, played) {
             throw new Error(message);
         }
 
-        setupMessage(document.querySelector('#message'), { status: 2, message: data.hint })
+        setupMessage(document.querySelector('#message'), { status: 2, message: data.score + ' ' + data.word })
+    }
+
+    async function complex_hint() {
+        let response = await fetch(url + '/game/complex_hint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                game: localStorage.getItem('game')
+            })
+        })
+
+        let data = await response.json()
+
+        if (!response.ok) {            
+            setupMessage(document.querySelector('#message'), { status: 4, message: data.message })
+            throw new Error(message);
+        }
+
+        console.log(data)
+
+        setupMessage(document.querySelector('#message'), { status: 2, message:  data.max_result + ' ' + data.max_words })
     }
 
     async function restart() {
@@ -144,6 +167,7 @@ export function setupControls(element, played) {
                 <button id='finish'>finish</button>
                 <button id='clear'>clear</button>
                 <button id='hint'>hint</button>
+                <button id='complex_hint'>complex hint</button>
             </div>
         `;
 
@@ -153,6 +177,7 @@ export function setupControls(element, played) {
         document.querySelector('#finish').addEventListener('click', finish);
         document.querySelector('#clear').addEventListener('click', clear);
         document.querySelector('#hint').addEventListener('click', hint);
+        document.querySelector('#complex_hint').addEventListener('click', complex_hint);
     }
 
     setControls()
