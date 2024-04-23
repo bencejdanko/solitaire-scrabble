@@ -3,7 +3,9 @@
 <div id="app"></div>
 
 <script>
-    let url = 'http://localhost:5000'
+    let currentUrl = window.location.href;
+    let baseUrl = currentUrl.split('/').slice(0, 3).join('/');
+    url = baseUrl;
 </script>
 
 {% set js_files = [
