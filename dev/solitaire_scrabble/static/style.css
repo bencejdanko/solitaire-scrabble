@@ -112,10 +112,18 @@ a {
     content: "";
     display: table;
     clear: both;
-    }
+}
 
 .game {
     width: 100%;
+}
+
+button {
+    width: 75px;
+    height: 50px;
+    padding: 3;
+    margin: 3;
+
 }
 
 .start-button {
@@ -150,6 +158,11 @@ a {
     text-align: center;
     line-height: 25px;
     font-size: 12px;
+    border-radius: 5px;
+    background: #f6f9fc;
+    box-sizing: border-box;
+    box-shadow: 0 50px 100px -20px rgba(50, 50, 93, 0.25), 0 30px 60px -30px rgba(0, 0, 0, 0.3), inset 0 -2px 6px 0 rgba(10, 37, 64, 0.35);
+    border-radius: 5px;
 }
 
 .sequence-tile-score {
@@ -166,6 +179,14 @@ a {
     text-align: center;
     line-height: 50px;
     font-size: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 50px 100px -20px rgba(50, 50, 93, 0.25), 0 30px 60px -30px rgba(0, 0, 0, 0.3), inset 0 -2px 6px 0 rgba(10, 37, 64, 0.35);
+    border-radius: 5px;
+}
+
+.hand-tile:hover {
+    transform: scale(1.1);
+    transition: all 0.5s ease-out
 }
 
 .board-tile {
@@ -177,6 +198,9 @@ a {
     text-align: center;
     line-height: 50px;
     font-size: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 50px 100px -20px rgba(50, 50, 93, 0.25), 0 30px 60px -30px rgba(0, 0, 0, 0.3), inset 0 -2px 6px 0 rgba(10, 37, 64, 0.35);
+    border-radius: 5px;
 }
 
 .hand-tile-score {
@@ -226,12 +250,18 @@ a {
     align-items: center;
 }
 
-table {
-    width: 100%;
-    display: flex;
+#leaderboard {
     justify-content: center;
     align-items: center;
+    display: flex;
+}
+
+table {
+    display: flex;
+    justify-self: center;
     border-spacing: 1em;
+    border: 1px solid gray;
+    border-radius: 5px;
 }
 
 #word-score {

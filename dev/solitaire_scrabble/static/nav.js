@@ -3,8 +3,9 @@ export function setupNav(element, username) {
 
         element.innerHTML = `
             <nav>
-                <h1>Solitaire Scrabble</h1>
                 <ul class='center'>
+                    <span class=""><i><b>Solitaire Scrabble</b></i><span>
+                     - 
                     <a href="/game">play</a>
                      - 
                     <a href="/rules">rules</a>

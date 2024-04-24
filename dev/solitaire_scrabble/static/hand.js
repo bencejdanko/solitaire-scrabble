@@ -17,6 +17,13 @@ export function setupHand(element, hand = []) {
 
         element.innerHTML = tilesHTML;
 
+        const controlsHTML = `
+        <button>shuffle</button>
+        `
+
+        element.innerHTML = tilesHTML + controlsHTML
+
+
         // Now query and setup tiles
         hand.forEach((tile, i) => {
             setupHandTile(document.querySelector(`#hand-tile-${i}`), tile, i, letter_scores[tile]);

@@ -21,5 +21,10 @@ export function setupHandTile(element, letter, value, letter_score) {
         e.preventDefault()
     })
 
+    element.addEventListener('click', (e) => {
+        e.preventDefault()
+        console.log("clicked")
+    })
+
     setHandTile()
 }

@@ -11,6 +11,7 @@ export function setupBoardTile(element, value, id, played) {
         element.innerHTML = `
             <span class="tile-value">${value ? value : ''}</span>
         `;
+
     }
 
     setTile(value)

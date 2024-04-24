@@ -7,6 +7,5 @@ export function setupSequenceTile(element, letter, value, letter_score) {
             </div>
         `
     }
-
     setSequenceTile()
 }
