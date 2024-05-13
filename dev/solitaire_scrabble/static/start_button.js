@@ -1,3 +1,5 @@
+import { setupApp } from "./main.js";
+
 async function startNewGame() {
 
     const response = await fetch(url + '/game/new_game', {
@@ -9,7 +11,12 @@ async function startNewGame() {
 
     const gameResponse = await response.json();
     localStorage.setItem('game', gameResponse.game);
-    window.location.reload();
+    setupApp();
+    const app = document.querySelector('#app');
+    app.style.animation = 'none';
+    app.offsetHeight;
+    app.style.opacity = 0;
+    app.style.animation = 'fadeInAnimation ease 3s';
     
 }
 

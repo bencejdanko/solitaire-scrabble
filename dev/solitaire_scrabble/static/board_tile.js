@@ -5,7 +5,7 @@ export function setupBoardTile(element, value, id, played) {
 
     const setTile = (value) => {
         if (value) {
-            element.setAttribute('style', 'background-color: #3afd47be')
+            element.setAttribute('style', 'background-color: var(--green1);')
         }
 
         element.innerHTML = `
@@ -39,6 +39,5 @@ export function setupBoardTile(element, value, id, played) {
         }
 
         e.dataTransfer.setData('text/plain', JSON.stringify({ letter: played[id].letter, value: played[id].value, elementId: element.id }))
-
     })
 }
