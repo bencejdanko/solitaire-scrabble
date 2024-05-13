@@ -2,6 +2,8 @@
 
 Bence Danko - Solitaire Scrabble
 
+Deployment: https://solitaire.32kb.dev
+
 ### B. Project Repository
 
 https://github.com/bencejdanko/solitaire-scrabble
