@@ -165,7 +165,6 @@ export function setupControls(element, played) {
                 <button id='restart'>restart</button>
                 <button id='new_game'>new game</button>
                 <button id='finish'>finish</button>
-                <button id='clear'>clear</button>
                 <button id='hint'>hint</button>
                 <button id='complex_hint'>complex hint</button>
             </div>
@@ -175,7 +174,6 @@ export function setupControls(element, played) {
         document.querySelector('#restart').addEventListener('click', restart);
         document.querySelector('#new_game').addEventListener('click', new_game);
         document.querySelector('#finish').addEventListener('click', finish);
-        document.querySelector('#clear').addEventListener('click', clear);
         document.querySelector('#hint').addEventListener('click', hint);
         document.querySelector('#complex_hint').addEventListener('click', complex_hint);
     }

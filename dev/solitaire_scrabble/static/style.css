@@ -101,6 +101,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    /* transform: translate(0, -20px); */
 }
 
 .container {
@@ -227,12 +228,19 @@ button {
 .start-button {}
 
 #nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .nav {
-    border: 1px solid #000000;
-    margin-top: 40px;
-    
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 10px;    
+    width: 50%;
 }
 
 .start-button:hover {
@@ -245,6 +253,7 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+    
 
 }
 
@@ -338,6 +347,9 @@ button {
 
 .board-grid {
     display: grid;
+    padding: 10px;
+    border: 1px solid black;
+    background-color: lightgrey;
     grid-template-columns: repeat(7, 1fr);
     grid-gap: 10px;
     justify-items: center;
@@ -390,4 +402,24 @@ table {
     justify-content: center;
     align-items: center;
     margin-top: 20px;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pop-animation {
+    animation: pop 0.3s ease-in-out;
+}
+
+.quick-pop-animation {
+    animation: pop 0.2s ease-in-out;
 }

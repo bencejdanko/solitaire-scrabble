@@ -9,7 +9,12 @@ let letter_scores = {
     'z': 10
 }
 
-export function setupHand(element, hand = []) {
+export function setupHand(element, hand = [], played) {
+
+    const clear = () => {
+
+    }
+
     const setHand = (letter_scores) => {
         const tilesHTML = hand.map((tile, i) => `
             <div id="hand-tile-${i}"></div>
@@ -17,17 +22,22 @@ export function setupHand(element, hand = []) {
 
         element.innerHTML = tilesHTML;
 
-        const controlsHTML = `
-        <button>shuffle</button>
+        const controlsHTML0 = `
+            <button id='clear'>clear</button>
         `
 
-        element.innerHTML = tilesHTML + controlsHTML
+        const controlsHTML1 = `
+            <button id='shuffle'>shuffle</button>
+        `
 
+        element.innerHTML = controlsHTML0 + tilesHTML + controlsHTML1
 
         // Now query and setup tiles
         hand.forEach((tile, i) => {
-            setupHandTile(document.querySelector(`#hand-tile-${i}`), tile, i, letter_scores[tile]);
+            setupHandTile(document.querySelector(`#hand-tile-${i}`), tile, i, letter_scores[tile], played);
         });
+
+        document.querySelector('#clear').addEventListener('click', clear);
     }
 
     fetch(url + '/game/letter_scores')

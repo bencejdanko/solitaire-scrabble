@@ -1,4 +1,4 @@
-export function setupHandTile(element, letter, value, letter_score) {
+export function setupHandTile(element, letter, value, letter_score, played) {
 
     const setHandTile = () => {
         element.innerHTML = `
@@ -9,21 +9,28 @@ export function setupHandTile(element, letter, value, letter_score) {
         `;
     }
 
-    element.setAttribute('draggable', 'true')
-
-    const payload = { letter, value, elementId: element.id }
-
-    element.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', JSON.stringify(payload))
-    })
-
-    element.addEventListener('dragend', (e) => {
-        e.preventDefault()
-    })
-
     element.addEventListener('click', (e) => {
-        e.preventDefault()
-        console.log("clicked")
+        let idx = played.findIndex(tile => tile === undefined)
+        if (idx === -1) {
+            return
+        }
+        played[idx] = { letter, value }
+        let boardTile = document.querySelector(`#tile-${idx}`)
+        boardTile.innerHTML = `
+            <span class="tile-value">${letter}</span>
+        `;
+        
+        element.classList.add('pop-animation');
+
+        boardTile.classList.add('quick-pop-animation');
+        boardTile.classList.add('filled-board-tile')
+
+        // Remove the tile after animation ends
+        element.addEventListener('animationend', () => {
+            element.innerHTML = '';
+        }, { once: true });
+
+        
     })
 
     setHandTile()
