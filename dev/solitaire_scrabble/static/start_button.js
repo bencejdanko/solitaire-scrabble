@@ -1,3 +1,5 @@
+import { setupApp } from "./main.js";
+
 async function startNewGame() {
 
     const response = await fetch(url + '/game/new_game', {
@@ -9,8 +11,7 @@ async function startNewGame() {
 
     const gameResponse = await response.json();
     localStorage.setItem('game', gameResponse.game);
-    window.location.reload();
-    
+    setupApp();
 }
 
 export function setupStartButton(element) {
