@@ -12,7 +12,23 @@ let letter_scores = {
 export function setupHand(element, hand = [], played) {
 
     const clear = () => {
+        fetch(url + '/game/letter_scores')
+            .then(response => response.json())
+            .then(data => {
+                setHand(data);
+            })
+    }
 
+    const shuffle = () => {
+        for (let i = hand.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [hand[i], hand[j]] = [hand[j], hand[i]];
+        }
+        fetch(url + '/game/letter_scores')
+            .then(response => response.json())
+            .then(data => {
+                setHand(data);
+            })
     }
 
     const setHand = (letter_scores) => {
@@ -38,11 +54,13 @@ export function setupHand(element, hand = [], played) {
         });
 
         document.querySelector('#clear').addEventListener('click', clear);
+        document.querySelector('#shuffle').addEventListener('click', shuffle);
+
     }
 
     fetch(url + '/game/letter_scores')
-    .then(response => response.json())
-    .then(data => {
-        setHand(data);
-    })
+        .then(response => response.json())
+        .then(data => {
+            setHand(data);
+        })
 }

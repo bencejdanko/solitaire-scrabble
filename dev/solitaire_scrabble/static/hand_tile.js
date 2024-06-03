@@ -27,7 +27,7 @@ export function setupHandTile(element, letter, value, letter_score, played) {
 
         // Remove the tile after animation ends
         element.addEventListener('animationend', () => {
-            element.innerHTML = '';
+            element.innerHTML = '<div> t </div>';
         }, { once: true });
 
         
