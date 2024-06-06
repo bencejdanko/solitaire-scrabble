@@ -417,9 +417,17 @@ table {
 }
 
 .pop-animation {
-    animation: pop 0.3s ease-in-out;
+    animation: pop 0.1s ease-in-out;
 }
 
-.quick-pop-animation {
-    animation: pop 0.2s ease-in-out;
+.played-words {
+    height: 200;
+    width: 200;
+    background-color: lightgray;
+}
+
+.board-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    
 }

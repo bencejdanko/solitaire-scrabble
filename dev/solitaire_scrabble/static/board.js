@@ -1,9 +1,9 @@
 import { setupBoardTile } from "./board_tile.js"
 
-export function setupBoard(element, board=[], played) {
+export function setupBoard(element, context) {
 
     const setBoard = (letter_scores) => {
-        const tilesHTML = board.map((tile, i) => `
+        const tilesHTML = context.board.map((tile, i) => `
             <div id="tile-${i}" class="board-tile"></div>
             </div>
         `).join('');
@@ -11,8 +11,8 @@ export function setupBoard(element, board=[], played) {
         element.innerHTML = tilesHTML;
 
         // Now query and setup tiles
-        board.forEach((tile, i) => {
-            setupBoardTile(document.querySelector(`#tile-${i}`), tile, i, played);
+        context.board.forEach((tile, i) => {
+            setupBoardTile(document.querySelector(`#tile-${i}`), tile, i, context.played);
         });
     }
 
@@ -22,4 +22,5 @@ export function setupBoard(element, board=[], played) {
 
 export function updateBoard(idx, played) {
     let updatedTile = document.querySelector(`#tile-${idx}`)
+
 }

@@ -9,9 +9,13 @@ let letter_scores = {
     'z': 10
 }
 
-export function setupHand(element, hand = [], played) {
+export function setupHand(element, context) {
 
     const clear = () => {
+
+        context.played = new Array(context.board.length)
+        context.setupElement('#board', context)
+
         fetch(url + '/game/letter_scores')
             .then(response => response.json())
             .then(data => {
@@ -19,10 +23,13 @@ export function setupHand(element, hand = [], played) {
             })
     }
 
+    /**
+     * Fisher-Yates (also known as Knuth) shuffle algorithm.
+     */
     const shuffle = () => {
-        for (let i = hand.length - 1; i > 0; i--) {
+        for (let i = context.hand.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [hand[i], hand[j]] = [hand[j], hand[i]];
+            [context.hand[i], context.hand[j]] = [context.hand[j], context.hand[i]];
         }
         fetch(url + '/game/letter_scores')
             .then(response => response.json())
@@ -32,7 +39,7 @@ export function setupHand(element, hand = [], played) {
     }
 
     const setHand = (letter_scores) => {
-        const tilesHTML = hand.map((tile, i) => `
+        const tilesHTML = context.hand.map((tile, i) => `
             <div id="hand-tile-${i}"></div>
         `).join('');
 
@@ -49,8 +56,8 @@ export function setupHand(element, hand = [], played) {
         element.innerHTML = controlsHTML0 + tilesHTML + controlsHTML1
 
         // Now query and setup tiles
-        hand.forEach((tile, i) => {
-            setupHandTile(document.querySelector(`#hand-tile-${i}`), tile, i, letter_scores[tile], played);
+        context.hand.forEach((tile, i) => {
+            setupHandTile(document.querySelector(`#hand-tile-${i}`), tile, i, letter_scores[tile], context.played);
         });
 
         document.querySelector('#clear').addEventListener('click', clear);

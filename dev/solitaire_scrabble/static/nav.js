@@ -1,5 +1,7 @@
-export function setupNav(element, username) {
+export function setupNav(element, context) {
     const setNav = () => {
+
+        let username = context.username
 
         element.innerHTML = `
             <div class='nav'>

@@ -1,5 +1,5 @@
 
-export function setupBoardTile(element, value, id, played) {
+export function setupBoardTile(element, value) {
 
     const setTile = (value) => {
         if (value) {

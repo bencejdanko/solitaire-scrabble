@@ -11,6 +11,7 @@ import { setupLeaderboard } from "./leaderboard.js";
 import { setupMessage } from "./message.js";
 import { setupRules } from "./rules.js";
 import { setupStartDaily } from './start_daily.js'
+import { setupPlayedWords } from "./played_words.js";
 
 export function setupApp() {
 
@@ -40,9 +41,9 @@ export function setupApp() {
     if (game) {
 
         const payload = game.split('.')[1];
-        let info;
+        let context;
         try {
-            info = JSON.parse(atob(payload));
+            context = JSON.parse(atob(payload));
         } catch (e) {
             console.error(e);
             console.log("Invalid game! Clearing...")
@@ -50,13 +51,22 @@ export function setupApp() {
             window.location.reload();
         }
 
-        let { board, hand, sequence, score, played_words, complete } = info;
-        let played = Array(board.length);
+        /**
+         * Game context attributes:
+         * board, hand, sequence, score, played_words, complete, username, user_id, played
+         */
+        context.username = username
+        context.user_id = user_id
+        context.played = Array(context.board.length);
 
-        document.querySelector('#app').innerHTML = /*html*/ `
+        document.querySelector('#app').innerHTML = `
             <div id='nav'></div>
             <div class='content'>
-                <div id="board"></div>
+                <div class='board-content'>
+                    <div id="board"></div>
+                    <div id='played-words'></div>
+                </div>
+
                 <div id="message"></div>
                 <!-- <div id="word-score"></div> -->
                 <div id="score"></div>
@@ -66,10 +76,10 @@ export function setupApp() {
             </div>
         `;
 
-        setupAppElements(username, board, hand, sequence, score, played);
+        setupAppElements(context);
 
     } else {
-        document.querySelector('#app').innerHTML = /*html*/ `
+        document.querySelector('#app').innerHTML = `
         <div id='nav'></div>
         <div class='content'>
             <div class='title'>Worditaire</div>
@@ -84,63 +94,42 @@ export function setupApp() {
         </div>
         `;
 
-        setupAppElements(username, [], [], [], 0, []);
+        let empty_context = {};
+        empty_context.username = username
+        setupAppElements(empty_context);
         document.querySelector('#app').style.opacity = '1';
     }
 
 }
 
-export function setupAppElements(username, board, hand, sequence, score, played) {
-    console.log()
+export function setupAppElements(context) {
 
-    if (document.querySelector('#nav')) {
-        setupNav(document.querySelector('#nav'), username);
+    const elements = {
+        '#nav': setupNav,
+        '#leaderboard': setupLeaderboard,
+        '#start-button': setupStartButton,
+        '#rules': setupRules,
+        '#board': setupBoard,
+        '#score': setupScore,
+        '#hand': setupHand,
+        '#sequence': setupSequence,
+        '#controls': setupControls,
+        '#message': setupMessage,
+        '#played-words': setupPlayedWords
+    };
+
+    const setupElement = (selector, context) => {
+        let element = document.querySelector(selector)
+        if (element) {
+            elements[selector](element, context)
+        }
     }
 
-    if (document.querySelector('#leaderboard')) {
-        setupLeaderboard(document.querySelector('#leaderboard'));
-    }
+    context.setupElement = setupElement
 
-    if (document.querySelector('#start-button')) {
-        setupStartButton(document.querySelector('#start-button'));
-    }
-
-    if (document.querySelector('#rules')) {
-        setupRules(document.querySelector('#rules'))
-    }
-
-    if (document.querySelector('#board')) {
-        setupBoard(document.querySelector('#board'), board, played)
-    }
-
-    if (document.querySelector('#score')) {
-        setupScore(document.querySelector('#score'), score)
-    }
-
-    if (document.querySelector('#hand')) {
-        setupHand(document.querySelector('#hand'), hand, played)
-    }
-
-    if (document.querySelector(`#sequence`)) {
-        setupSequence(document.querySelector(`#sequence`), sequence)
-    }
-
-    if (document.querySelector('#controls')) {
-        setupControls(document.querySelector('#controls'), played)
-    }
-
-    if (document.querySelector('#message')) {
-        setupMessage(document.querySelector('#message'))
-    }
-
-    // if (document.querySelector('#games-history')) {
-    //     setupGamesHistory(document.querySelector('#games-history'));
-    // }
-
-    // if (document.querySelector('#start-daily')) {
-    //     setupStartDaily(document.querySelector('#start-daily'));
-    // }
-    //setupWordScore(document.querySelector('#word-score'))
+    Object.keys(elements).forEach(selector => {
+        setupElement(selector, context)
+    });
 
 }
 

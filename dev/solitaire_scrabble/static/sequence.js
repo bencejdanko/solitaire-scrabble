@@ -9,7 +9,9 @@ let letter_scores = {
     'z': 10
 }
 
-export function setupSequence(element, sequence = []) {
+export function setupSequence(element, context) {
+    let sequence = context.sequence
+
     const setSequence = (letter_scores) => {
         const tilesHTML = sequence.map((tile, i) => `
             <div id='sequence-tile-${i}'></div>

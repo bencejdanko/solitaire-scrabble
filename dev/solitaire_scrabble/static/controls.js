@@ -1,12 +1,12 @@
 import { setupMessage } from "./message.js"
 
-export function setupControls(element, played) {
+export function setupControls(element, context) {
 
     async function submit() {
         let played_word = ''
-        for (let i = 0; i < played.length; i++) {
-            if (played[i]) {
-                played_word += played[i].letter
+        for (let i = 0; i < context.played.length; i++) {
+            if (context.played[i]) {
+                played_word += context.played[i].letter
             } else {
                 break
             }
@@ -31,6 +31,7 @@ export function setupControls(element, played) {
         }
 
         localStorage.setItem('game', data.game)
+        
         window.location.reload()
 
     }
